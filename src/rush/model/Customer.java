@@ -137,6 +137,20 @@ public abstract class Customer {
         return before - satisfaction;
     }
 
+    /**
+     * Restores satisfaction to a customer still awaiting service, never above 100.
+     *
+     * @return the satisfaction actually gained
+     */
+    public int recover(int points) {
+        if (!status.isAwaitingService()) {
+            return 0;
+        }
+        int before = satisfaction;
+        satisfaction = Math.min(MAX_SATISFACTION, satisfaction + points);
+        return satisfaction - before;
+    }
+
     void leave() {
         if (status.isGone()) {
             return;

@@ -16,12 +16,15 @@ import rush.control.Objective;
 import rush.model.Customer;
 import rush.model.CustomerStatus;
 import rush.model.Menu;
-import rush.model.MenuItem;
+import rush.model.ComboMeal;
+import rush.model.Dish;
 import rush.model.Money;
 import rush.model.OrderStatus;
 import rush.model.CriticCustomer;
 import rush.model.RegularCustomer;
 import rush.model.VIPCustomer;
+import rush.policy.HappyHour;
+import rush.policy.PricingPolicy;
 import rush.staff.Command;
 
 /**
@@ -53,6 +56,12 @@ public final class RulesTest {
         kit.test("Critic: loses 12 per turn and orders the most elaborate dish", RulesTest::criticBehaviour);
         kit.test("base setting has six arrivals including a VIP and a Critic", RulesTest::stageTwoArrivals);
         kit.test("all customer types follow the same order and service flow", RulesTest::sameFlowForAllTypes);
+        kit.test("combo: summed units, 90% of the combined price", RulesTest::comboMeal);
+        kit.test("Host seats one customer in addition to the Waiter", RulesTest::hostSeatsToo);
+        kit.test("Happy Hour: once per game, this turn and the next", RulesTest::happyHourDuration);
+        kit.test("Happy Hour: 20% off after the VIP discount, locked when ordered", RulesTest::happyHourPricing);
+        kit.test("Happy Hour: waiting customers recover 15, capped at 100", RulesTest::happyHourRecovery);
+        kit.test("Happy Hour only starts before any staff member acts", RulesTest::happyHourStartOfTurn);
         kit.test("scripted victory run ends in Victory", RulesTest::scriptedVictory);
         kit.test("scripted defeat run ends in Defeat", RulesTest::scriptedDefeat);
 
@@ -69,7 +78,7 @@ public final class RulesTest {
 
     /** One customer, one Pasta, full attention: matches the table in section 3.3 of the brief. */
     private static void workedExample() {
-        Menu pastaFirst = new Menu(List.of(new MenuItem("Pasta", Money.dollars(18), 2)));
+        Menu pastaFirst = new Menu(List.of(new Dish("Pasta", Money.dollars(18), 2)));
         GameConfig config = new GameConfig("Example", 18, 2, pastaFirst,
                 new ArrivalSchedule().at(1, "Ada", RegularCustomer::new), Objective.base());
         Game game = new Game(config);
@@ -152,7 +161,7 @@ public final class RulesTest {
 
     /** Two customers finish eating on different turns; each pays on a later turn, one per turn. */
     private static void cashierOldestFirst() {
-        Menu salads = new Menu(List.of(new MenuItem("Salad", Money.dollars(9), 1)));
+        Menu salads = new Menu(List.of(new Dish("Salad", Money.dollars(9), 1)));
         GameConfig config = new GameConfig("Two guests", 18, 2, salads,
                 new ArrivalSchedule().at(1, "Ada", RegularCustomer::new).at(2, "Ben", RegularCustomer::new),
                 Objective.base());
@@ -236,7 +245,7 @@ public final class RulesTest {
 
     private static void foodChoice() {
         Game game = baseGame();
-        String[] expected = {"Salad", "Burger", "Pasta", "Salad", "Burger", "Pasta"};
+        String[] expected = {"Salad", "Burger", "Pasta", "Salad + Burger Combo", "Salad + Pasta Combo", "Salad"};
         Menu menu = game.restaurant().menu();
         for (int id = 1; id <= 6; id++) {
             Customer c = new RegularCustomer(id, "Guest", 1);
@@ -258,7 +267,11 @@ public final class RulesTest {
         Game game = baseGame();
         Customer critic = new CriticCustomer(2, "Ben", 4);   // rotation alone would give a Burger
         equal(12, critic.satisfactionLossPerTurn(), "loss per turn");
-        equal("Pasta", critic.chooseFrom(game.restaurant().menu()).name(), "most elaborate dish");
+        equal("Salad + Pasta Combo", critic.chooseFrom(game.restaurant().menu()).name(),
+                "most elaborate item (3 units)");
+        Menu dishesOnly = new Menu(List.of(new Dish("Salad", Money.dollars(9), 1),
+                new Dish("Burger", Money.dollars(15), 1), new Dish("Pasta", Money.dollars(18), 2)));
+        equal("Pasta", critic.chooseFrom(dishesOnly).name(), "most elaborate dish on the Stage 2 menu");
         equal(Money.dollars(18), critic.billFor(Money.dollars(18)), "full price");
         for (int i = 0; i < 9; i++) {
             critic.loseSatisfaction();
@@ -280,7 +293,7 @@ public final class RulesTest {
 
     /** A VIP goes through exactly the same seat, order, cook, serve, eat, pay steps; only the bill differs. */
     private static void sameFlowForAllTypes() {
-        Menu burgers = new Menu(List.of(new MenuItem("Burger", Money.dollars(15), 1)));
+        Menu burgers = new Menu(List.of(new Dish("Burger", Money.dollars(15), 1)));
         GameConfig config = new GameConfig("VIP only", 18, 2, burgers,
                 new ArrivalSchedule().at(1, "Vera", VIPCustomer::new), Objective.base());
         Game game = new Game(config);
@@ -317,14 +330,122 @@ public final class RulesTest {
         equal("N/A", game.scoreboard().averageText(), "average with nobody paid");
     }
 
+    private static void comboMeal() {
+        Dish salad = new Dish("Salad", Money.dollars(9), 1);
+        Dish burger = new Dish("Burger", Money.dollars(15), 1);
+        Dish pasta = new Dish("Pasta", Money.dollars(18), 2);
+        ComboMeal saladPasta = new ComboMeal(salad, pasta);
+        equal(Money.ofCents(2430), saladPasta.price(), "Salad + Pasta price");
+        equal(3, saladPasta.prepUnits(), "Salad + Pasta units");
+        ComboMeal saladBurger = new ComboMeal(salad, burger);
+        equal(Money.ofCents(2160), saladBurger.price(), "Salad + Burger price");
+        equal(2, saladBurger.prepUnits(), "Salad + Burger units");
+        equal(Money.ofCents(2970), new ComboMeal(burger, pasta).price(), "Burger + Pasta price");
+    }
+
+    private static void hostSeatsToo() {
+        GameConfig config = new GameConfig("Two early guests", 18, 2, GameConfig.base().menu(),
+                new ArrivalSchedule().at(1, "Ada", RegularCustomer::new).at(2, "Ben", RegularCustomer::new),
+                Objective.base());
+        Game game = new Game(config);
+        game.beginTurn();
+        game.endTurn();                                   // nobody seats Ada on turn 1
+        game.beginTurn();
+        String why = rejected(game, "Host", Command.takeOrder(1));
+        check(why.contains("can't order"), "the Host only seats: " + why);
+        ok(game, "Host", Command.seat(1, 1));
+        why = rejected(game, "Host", Command.seat(2, 2));
+        check(why.contains("already used"), "one seat per turn for the Host: " + why);
+        ok(game, "Waiter", Command.seat(2, 2));          // both seated in the same turn
+        check(game.restaurant().queue().isEmpty(), "queue empty");
+        game.endTurn();
+
+        Game second = new Game(config);
+        second.beginTurn();
+        ok(second, "Host", Command.seat(1, 1));
+        ok(second, "Waiter", Command.takeOrder(1));      // order of a customer the Host just seated
+        ok(second, "Chef", Command.cook(1));
+    }
+
+    private static void happyHourDuration() {
+        HappyHour happyHour = new HappyHour();
+        check(happyHour.isAvailable(), "available at the start");
+        happyHour.activate(5);
+        equal(2, happyHour.turnsRemaining(5), "remaining on turn 5");
+        equal(1, happyHour.turnsRemaining(6), "remaining on turn 6");
+        equal(0, happyHour.turnsRemaining(7), "over on turn 7");
+        check(!happyHour.isActiveOn(4) && happyHour.isActiveOn(5) && happyHour.isActiveOn(6)
+                && !happyHour.isActiveOn(7), "active on turns 5 and 6 only");
+        try {
+            happyHour.activate(9);
+            throw new AssertionError("a second activation should be refused");
+        } catch (rush.model.RuleViolation expected) {
+            check(expected.getMessage().contains("once per game"), "explains: " + expected.getMessage());
+        }
+    }
+
+    private static void happyHourPricing() {
+        HappyHour happyHour = new HappyHour();
+        PricingPolicy pricing = new PricingPolicy(List.of(happyHour));
+        Dish burger = new Dish("Burger", Money.dollars(15), 1);
+        Customer vip = new VIPCustomer(1, "Vera", 1);
+        Customer regular = new RegularCustomer(2, "Rex", 1);
+        equal(Money.ofCents(1350), pricing.quote(vip, burger, 3), "VIP before Happy Hour");
+        happyHour.activate(4);
+        equal(Money.ofCents(1080), pricing.quote(vip, burger, 4), "VIP Burger in Happy Hour: 15 x 0.9 x 0.8");
+        equal(Money.dollars(12), pricing.quote(regular, burger, 5), "Regular Burger in Happy Hour");
+        equal(Money.dollars(15), pricing.quote(regular, burger, 6), "after Happy Hour");
+
+        // In a real game the price stays as it was when the order was taken.
+        Game game = baseGame();
+        game.beginTurn();
+        ok(game, "Host", Command.seat(1, 1));
+        ok(game, "Waiter", Command.takeOrder(1));
+        game.endTurn();
+        game.beginTurn();
+        check(game.startHappyHour().succeeded(), "Happy Hour starts on turn 2");
+        equal(Money.dollars(9), game.restaurant().customer(1).order().orElseThrow().price(),
+                "an order placed before Happy Hour keeps its price");
+    }
+
+    private static void happyHourRecovery() {
+        Game game = baseGame();
+        game.beginTurn();                                 // Ada waits in the queue: 100 -> 92
+        game.endTurn();
+        game.beginTurn();                                 // 92 -> 84
+        game.endTurn();
+        game.beginTurn();
+        check(game.startHappyHour().succeeded(), "starts");
+        Customer ada = game.restaurant().customer(1);
+        equal(99, ada.satisfaction(), "84 + 15 on the first Happy Hour turn");
+        game.endTurn();                                   // 99 -> 91
+        game.beginTurn();                                 // second turn: 91 + 15 capped at 100
+        equal(100, ada.satisfaction(), "capped at 100 on the second turn");
+        game.endTurn();
+        game.beginTurn();                                 // over: no more recovery
+        equal(92, ada.satisfaction(), "no recovery after Happy Hour");
+        check(!game.canStartHappyHour(), "cannot start again");
+        String why = game.startHappyHour().message();
+        check(why.contains("once per game"), "explains: " + why);
+    }
+
+    private static void happyHourStartOfTurn() {
+        Game game = baseGame();
+        game.beginTurn();
+        ok(game, "Host", Command.seat(1, 1));
+        check(!game.canStartHappyHour(), "not offered once staff have acted");
+        String why = game.startHappyHour().message();
+        check(why.contains("beginning of a turn"), "explains: " + why);
+    }
+
     private static void scriptedVictory() {
-        String transcript = TestKit.playScript("scripts/stage2-victory.txt");
+        String transcript = TestKit.playScript("scripts/stage3-victory.txt");
         check(transcript.contains("V I C T O R Y"), "victory banner");
-        check(transcript.contains("Revenue $67.20"), "revenue $67.20");
+        check(transcript.contains("Revenue $92.16"), "revenue $92.16");
     }
 
     private static void scriptedDefeat() {
-        String transcript = TestKit.playScript("scripts/stage2-defeat.txt");
+        String transcript = TestKit.playScript("scripts/stage3-defeat.txt");
         check(transcript.contains("D E F E A T"), "defeat banner");
     }
 }

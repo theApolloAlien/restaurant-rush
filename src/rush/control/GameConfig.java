@@ -2,15 +2,17 @@ package rush.control;
 
 import java.util.List;
 
+import rush.model.ComboMeal;
 import rush.model.CriticCustomer;
+import rush.model.Dish;
 import rush.model.Menu;
-import rush.model.MenuItem;
 import rush.model.Money;
 import rush.model.RegularCustomer;
 import rush.model.VIPCustomer;
 import rush.staff.Cashier;
 import rush.staff.Chef;
 import rush.staff.DirectedStaff;
+import rush.staff.Host;
 import rush.staff.Waiter;
 
 /**
@@ -39,13 +41,16 @@ public final class GameConfig {
     /**
      * 18 turns, 2 tables, one Waiter, Chef and Cashier, one customer at the
      * start of turns 1, 4, 7, 10, 13 and 16. Two of the six are a Critic and a
-     * VIP; the rest are Regulars.
+     * VIP; the rest are Regulars. A Host helps with seating, and two combos
+     * follow the three dishes on the menu board.
      */
     public static GameConfig base() {
-        Menu menu = new Menu(List.of(
-                new MenuItem("Salad", Money.dollars(9), 1),
-                new MenuItem("Burger", Money.dollars(15), 1),
-                new MenuItem("Pasta", Money.dollars(18), 2)));
+        Dish salad = new Dish("Salad", Money.dollars(9), 1);
+        Dish burger = new Dish("Burger", Money.dollars(15), 1);
+        Dish pasta = new Dish("Pasta", Money.dollars(18), 2);
+        Menu menu = new Menu(List.of(salad, burger, pasta,
+                new ComboMeal(salad, burger),
+                new ComboMeal(salad, pasta)));
         ArrivalSchedule arrivals = new ArrivalSchedule()
                 .at(1, "Ada", RegularCustomer::new)
                 .at(4, "Ben", CriticCustomer::new)
@@ -58,7 +63,7 @@ public final class GameConfig {
 
     /** The staff who take instructions, in the order they act each turn. */
     public List<DirectedStaff> hireDirectedStaff() {
-        return List.of(new Waiter("Wendy"), new Chef("Carlo"));
+        return List.of(new Host("Hugo"), new Waiter("Wendy"), new Chef("Carlo"));
     }
 
     public Cashier hireCashier() {

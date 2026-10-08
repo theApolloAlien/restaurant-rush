@@ -7,6 +7,7 @@ import rush.control.Game;
 import rush.control.GameConfig;
 import rush.control.GameEvent;
 import rush.staff.ActionResult;
+import rush.staff.Command;
 import rush.staff.DirectedStaff;
 
 /**
@@ -64,6 +65,9 @@ public final class ConsoleUI {
                 dashboard.turnHeader(game, edition);
                 dashboard.events(arrivals);
                 dashboard.board(game);
+                if (game.canStartHappyHour()) {
+                    offerHappyHour(game);
+                }
                 for (DirectedStaff staff : game.directedStaff()) {
                     instruct(game, staff);
                 }
@@ -76,8 +80,36 @@ public final class ConsoleUI {
         }
     }
 
-    /** Asks for instructions until this staff member has used their task for the turn. */
+    /** Happy Hour is a start-of-turn decision, so it is offered before any staff member acts. */
+    private void offerHappyHour(Game game) {
+        dashboard.happyHourOffer();
+        while (true) {
+            String answer = term.prompt(dashboard.happyHourPrompt()).orElseThrow(QuitGame::new).toLowerCase();
+            switch (answer) {
+                case "y", "yes" -> {
+                    dashboard.actionResult(game.startHappyHour());
+                    return;
+                }
+                case "", "n", "no" -> {
+                    term.println();
+                    return;
+                }
+                case "q", "quit", "exit" -> throw new QuitGame();
+                default -> dashboard.error("Answer y to start Happy Hour now, or n (or just Enter) to keep it.");
+            }
+        }
+    }
+
+    /**
+     * Asks for instructions until this staff member has used their task for the
+     * turn. Someone who can only wait does so without asking.
+     */
     private void instruct(Game game, DirectedStaff staff) {
+        if (game.options(staff).size() == 1) {
+            game.direct(staff, Command.waitTurn());
+            dashboard.autoWait(staff);
+            return;
+        }
         dashboard.staffPrompt(game, staff);
         while (staff.hasTaskLeft()) {
             String line = term.prompt(dashboard.promptText(staff)).orElseThrow(QuitGame::new);

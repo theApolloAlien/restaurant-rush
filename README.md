@@ -4,10 +4,10 @@ A turn-based restaurant management game for the command line (SC2002 group assig
 You are the manager: each turn you decide what the Waiter and the Chef do, and the
 Cashier collects payment on their own.
 
-**This snapshot is Stage 2: customer behaviour.** On top of Stage 1 (Regular customers,
-menu, Waiter, Chef, Cashier, full turn sequence, victory and defeat) it adds VIP
-customers (lose 5 per turn, 10% off) and Critics (lose 12 per turn, always order the
-most elaborate dish).
+**This snapshot is Stage 3: new role and menu policy.** On top of Stages 1 and 2
+(Regular, VIP and Critic customers, Waiter, Chef, Cashier, the full turn sequence) it
+adds a Host who seats one extra customer per turn, ComboMeals made of two dishes, and
+a once-per-game Happy Hour.
 
 ## Build and run
 
@@ -15,7 +15,7 @@ Needs JDK 17 or newer and nothing else (no network, no build tool).
 
 ```bash
 ./run.sh                                         # build and play
-./run.sh --script scripts/stage2-victory.txt     # replay the victory run
+./run.sh --script scripts/stage3-victory.txt     # replay the victory run
 ./run.sh --plain                                 # no colour, ASCII only
 ./test.sh                                        # rule checks
 ```

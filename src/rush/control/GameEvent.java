@@ -11,6 +11,7 @@ public record GameEvent(Kind kind, String message) {
         EATING,
         PAYMENT,
         PATIENCE,
-        DEPARTURE
+        DEPARTURE,
+        POLICY
     }
 }

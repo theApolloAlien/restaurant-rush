@@ -1,0 +1,779 @@
+
+   R E S T A U R A N T   R U S H
+   a turn-based restaurant management game - Stage 3 - Host, combos, Happy Hour
+
+   1  Play the base setting
+   2  How to play
+   3  Quit
+
+  > 1
+
+  +--------------------------------------------------------------------------+
+  | TURN 1 of 18   =.................     Stage 3 - Host, combos, Happy Hour |
+  +--------------------------------------------------------------------------+
+  | Revenue $0.00/$45.00   Paid 0/4   Avg satisfaction N/A/60   Left 0       |
+  | Happy Hour available - once per game, offered at the start of each turn  |
+  +--------------------------------------------------------------------------+
+
+    > #1 Ada (Regular) arrives and joins the queue with satisfaction 100.
+
+  WAITING QUEUE --------------------------------------------------------------
+     #1 Ada    Regular  ########## 100  Waiting for a table since turn 1
+
+  TABLES ---------------------------------------------------------------------
+   T1  free
+   T2  free
+
+  KITCHEN --------------------------------------------------------------------
+     no orders yet
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Host Hugo         seat 1 1  -  wait
+     Waiter Wendy      seat 1 1  -  wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * HAPPY HOUR  once per game, runs this turn and next
+    20% off new orders - guests still waiting +15 satisfaction per turn
+  happy hour now? [y/N] > n
+
+  * HOST HUGO  seat, wait
+    try seat 1 1  -  wait
+  host > seat 1 1
+    + Hugo seats #1 Ada at table 1.
+
+  * WAITER WENDY  seat, order, serve, wait
+    try order 1  -  wait
+  waiter > order 1
+    + Wendy takes #1 Ada's order: Salad ($9.00).
+
+  * CHEF CARLO  cook, wait
+    try cook 1  -  wait
+  chef > cook 1
+    + Carlo finishes #1 Ada's Salad (1/1). It is READY.
+
+  ---- End of turn 1 ---------------------------------------------------------
+    v #1 Ada (Waiting for Salad): satisfaction 100 -> 92 (-8)
+
+  Served 0 - Unhappy departures 0 - Revenue $0.00 - Avg sat. N/A - Turns 1/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 2 of 18   ==................     Stage 3 - Host, combos, Happy Hour |
+  +--------------------------------------------------------------------------+
+  | Revenue $0.00/$45.00   Paid 0/4   Avg satisfaction N/A/60   Left 0       |
+  | Happy Hour available - once per game, offered at the start of each turn  |
+  +--------------------------------------------------------------------------+
+
+  WAITING QUEUE --------------------------------------------------------------
+     nobody waiting
+
+  TABLES ---------------------------------------------------------------------
+   T1  #1 Ada    Regular  #########.  92  Waiting for Salad
+   T2  free
+
+  KITCHEN --------------------------------------------------------------------
+     #1 Ada    Salad                     $9.00   #    1/1  READY
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Host Hugo         wait
+     Waiter Wendy      serve 1  -  wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * HAPPY HOUR  once per game, runs this turn and next
+    20% off new orders - guests still waiting +15 satisfaction per turn
+  happy hour now? [y/N] > n
+
+  * Host Hugo has nothing useful to do and waits.
+  * WAITER WENDY  seat, order, serve, wait
+    try serve 1  -  wait
+  waiter > serve 1
+    + Wendy serves #1 Ada's Salad. Enjoy!
+
+  * Chef Carlo has nothing useful to do and waits.
+  ---- End of turn 2 ---------------------------------------------------------
+    A quiet turn.
+  Served 1 - Unhappy departures 0 - Revenue $0.00 - Avg sat. N/A - Turns 2/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 3 of 18   ===...............     Stage 3 - Host, combos, Happy Hour |
+  +--------------------------------------------------------------------------+
+  | Revenue $0.00/$45.00   Paid 0/4   Avg satisfaction N/A/60   Left 0       |
+  | Happy Hour available - once per game, offered at the start of each turn  |
+  +--------------------------------------------------------------------------+
+
+  WAITING QUEUE --------------------------------------------------------------
+     nobody waiting
+
+  TABLES ---------------------------------------------------------------------
+   T1  #1 Ada    Regular  #########.  92  Eating
+   T2  free
+
+  KITCHEN --------------------------------------------------------------------
+     #1 Ada    Salad                     $9.00   #    1/1  SERVED
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Host Hugo         wait
+     Waiter Wendy      wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * HAPPY HOUR  once per game, runs this turn and next
+    20% off new orders - guests still waiting +15 satisfaction per turn
+  happy hour now? [y/N] > n
+
+  * Host Hugo has nothing useful to do and waits.
+  * Waiter Wendy has nothing useful to do and waits.
+  * Chef Carlo has nothing useful to do and waits.
+  ---- End of turn 3 ---------------------------------------------------------
+    + #1 Ada finishes eating and is ready to pay.
+
+  Served 1 - Unhappy departures 0 - Revenue $0.00 - Avg sat. N/A - Turns 3/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 4 of 18   ====..............     Stage 3 - Host, combos, Happy Hour |
+  +--------------------------------------------------------------------------+
+  | Revenue $0.00/$45.00   Paid 0/4   Avg satisfaction N/A/60   Left 0       |
+  | Happy Hour available - once per game, offered at the start of each turn  |
+  +--------------------------------------------------------------------------+
+
+    > #2 Ben (Critic) arrives and joins the queue with satisfaction 100.
+
+  WAITING QUEUE --------------------------------------------------------------
+     #2 Ben    Critic   ########## 100  Waiting for a table since turn 4
+
+  TABLES ---------------------------------------------------------------------
+   T1  #1 Ada    Regular  #########.  92  Ready to pay
+   T2  free
+
+  KITCHEN --------------------------------------------------------------------
+     #1 Ada    Salad                     $9.00   #    1/1  SERVED
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Host Hugo         seat 2 2  -  wait
+     Waiter Wendy      seat 2 2  -  wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - will charge #1 Ada at turn end
+
+  * HAPPY HOUR  once per game, runs this turn and next
+    20% off new orders - guests still waiting +15 satisfaction per turn
+  happy hour now? [y/N] > n
+
+  * HOST HUGO  seat, wait
+    try seat 2 2  -  wait
+  host > seat 2 2
+    + Hugo seats #2 Ben at table 2.
+
+  * WAITER WENDY  seat, order, serve, wait
+    try order 2  -  wait
+  waiter > order 2
+    + Wendy takes #2 Ben's order: Salad + Pasta Combo ($24.30).
+
+  * CHEF CARLO  cook, wait
+    try cook 2  -  wait
+  chef > cook 2
+    + Carlo works on #2 Ben's Salad + Pasta Combo (1/3).
+
+  ---- End of turn 4 ---------------------------------------------------------
+    $ Cassie collects $9.00 from #1 Ada (satisfaction 92 recorded). Table 1 is
+      free. "Lovely meal, thank you!"
+    v #2 Ben (Waiting for Salad + Pasta Combo): satisfaction 100 -> 88 (-12)
+
+  Served 1 - Unhappy departures 0 - Revenue $9.00 - Avg sat. 92.0 - Turns 4/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 5 of 18   =====.............     Stage 3 - Host, combos, Happy Hour |
+  +--------------------------------------------------------------------------+
+  | Revenue $9.00/$45.00   Paid 1/4   Avg satisfaction 92.0/60   Left 0      |
+  | Happy Hour available - once per game, offered at the start of each turn  |
+  +--------------------------------------------------------------------------+
+
+  WAITING QUEUE --------------------------------------------------------------
+     nobody waiting
+
+  TABLES ---------------------------------------------------------------------
+   T1  free
+   T2  #2 Ben    Critic   #########.  88  Waiting for Salad + Pasta Combo
+
+  KITCHEN --------------------------------------------------------------------
+     #2 Ben    Salad + Pasta Combo      $24.30   #..  1/3  In preparation
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Host Hugo         wait
+     Waiter Wendy      wait
+     Chef Carlo        cook 2  -  wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * HAPPY HOUR  once per game, runs this turn and next
+    20% off new orders - guests still waiting +15 satisfaction per turn
+  happy hour now? [y/N] > n
+
+  * Host Hugo has nothing useful to do and waits.
+  * Waiter Wendy has nothing useful to do and waits.
+  * CHEF CARLO  cook, wait
+    try cook 2  -  wait
+  chef > cook 2
+    + Carlo works on #2 Ben's Salad + Pasta Combo (2/3).
+
+  ---- End of turn 5 ---------------------------------------------------------
+    v #2 Ben (Waiting for Salad + Pasta Combo): satisfaction 88 -> 76 (-12)
+
+  Served 1 - Unhappy departures 0 - Revenue $9.00 - Avg sat. 92.0 - Turns 5/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 6 of 18   ======............     Stage 3 - Host, combos, Happy Hour |
+  +--------------------------------------------------------------------------+
+  | Revenue $9.00/$45.00   Paid 1/4   Avg satisfaction 92.0/60   Left 0      |
+  | Happy Hour available - once per game, offered at the start of each turn  |
+  +--------------------------------------------------------------------------+
+
+  WAITING QUEUE --------------------------------------------------------------
+     nobody waiting
+
+  TABLES ---------------------------------------------------------------------
+   T1  free
+   T2  #2 Ben    Critic   ########..  76  Waiting for Salad + Pasta Combo
+
+  KITCHEN --------------------------------------------------------------------
+     #2 Ben    Salad + Pasta Combo      $24.30   ##.  2/3  In preparation
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Host Hugo         wait
+     Waiter Wendy      wait
+     Chef Carlo        cook 2  -  wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * HAPPY HOUR  once per game, runs this turn and next
+    20% off new orders - guests still waiting +15 satisfaction per turn
+  happy hour now? [y/N] > n
+
+  * Host Hugo has nothing useful to do and waits.
+  * Waiter Wendy has nothing useful to do and waits.
+  * CHEF CARLO  cook, wait
+    try cook 2  -  wait
+  chef > cook 2
+    + Carlo finishes #2 Ben's Salad + Pasta Combo (3/3). It is READY.
+
+  ---- End of turn 6 ---------------------------------------------------------
+    v #2 Ben (Waiting for Salad + Pasta Combo): satisfaction 76 -> 64 (-12)
+
+  Served 1 - Unhappy departures 0 - Revenue $9.00 - Avg sat. 92.0 - Turns 6/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 7 of 18   =======...........     Stage 3 - Host, combos, Happy Hour |
+  +--------------------------------------------------------------------------+
+  | Revenue $9.00/$45.00   Paid 1/4   Avg satisfaction 92.0/60   Left 0      |
+  | Happy Hour available - once per game, offered at the start of each turn  |
+  +--------------------------------------------------------------------------+
+
+    > #3 Chloe (VIP) arrives and joins the queue with satisfaction 100.
+
+  WAITING QUEUE --------------------------------------------------------------
+     #3 Chloe  VIP      ########## 100  Waiting for a table since turn 7
+
+  TABLES ---------------------------------------------------------------------
+   T1  free
+   T2  #2 Ben    Critic   ######....  64  Waiting for Salad + Pasta Combo
+
+  KITCHEN --------------------------------------------------------------------
+     #2 Ben    Salad + Pasta Combo      $24.30   ###  3/3  READY
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Host Hugo         seat 3 1  -  wait
+     Waiter Wendy      serve 2  -  seat 3 1  -  wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * HAPPY HOUR  once per game, runs this turn and next
+    20% off new orders - guests still waiting +15 satisfaction per turn
+  happy hour now? [y/N] > y
+    + Happy Hour is ON for turns 7-8 (2 turns left, including this one): 20%
+      off orders taken, 1 waiting guest +15 satisfaction.
+
+  * HOST HUGO  seat, wait
+    try seat 3 1  -  wait
+  host > seat 3 1
+    + Hugo seats #3 Chloe at table 1.
+
+  * WAITER WENDY  seat, order, serve, wait
+    try serve 2  -  order 3  -  wait
+  waiter > order 3
+    + Wendy takes #3 Chloe's order: Pasta ($12.96).
+
+  * CHEF CARLO  cook, wait
+    try cook 3  -  wait
+  chef > cook 3
+    + Carlo works on #3 Chloe's Pasta (1/2).
+
+  ---- End of turn 7 ---------------------------------------------------------
+    v #2 Ben (Waiting for Salad + Pasta Combo): satisfaction 79 -> 67 (-12)
+    v #3 Chloe (Waiting for Pasta): satisfaction 100 -> 95 (-5)
+
+  Served 1 - Unhappy departures 0 - Revenue $9.00 - Avg sat. 92.0 - Turns 7/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 8 of 18   ========..........     Stage 3 - Host, combos, Happy Hour |
+  +--------------------------------------------------------------------------+
+  | Revenue $9.00/$45.00   Paid 1/4   Avg satisfaction 92.0/60   Left 0      |
+  | HAPPY HOUR ON  1 turn left (last turn)  -  20% off new orders            |
+  +--------------------------------------------------------------------------+
+
+    * Happy Hour: #2 Ben perks up to satisfaction 82.
+    * Happy Hour: #3 Chloe perks up to satisfaction 100.
+
+  WAITING QUEUE --------------------------------------------------------------
+     nobody waiting
+
+  TABLES ---------------------------------------------------------------------
+   T1  #3 Chloe  VIP      ########## 100  Waiting for Pasta
+   T2  #2 Ben    Critic   ########..  82  Waiting for Salad + Pasta Combo
+
+  KITCHEN --------------------------------------------------------------------
+     #2 Ben    Salad + Pasta Combo      $24.30   ###  3/3  READY
+     #3 Chloe  Pasta                    $12.96   #.   1/2  In preparation
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Host Hugo         wait
+     Waiter Wendy      serve 2  -  wait
+     Chef Carlo        cook 3  -  wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * Host Hugo has nothing useful to do and waits.
+  * WAITER WENDY  seat, order, serve, wait
+    try serve 2  -  wait
+  waiter > serve 2
+    + Wendy serves #2 Ben's Salad + Pasta Combo. Enjoy!
+
+  * CHEF CARLO  cook, wait
+    try cook 3  -  wait
+  chef > cook 3
+    + Carlo finishes #3 Chloe's Pasta (2/2). It is READY.
+
+  ---- End of turn 8 ---------------------------------------------------------
+    v #3 Chloe (Waiting for Pasta): satisfaction 100 -> 95 (-5)
+
+  Served 2 - Unhappy departures 0 - Revenue $9.00 - Avg sat. 92.0 - Turns 8/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 9 of 18   =========.........     Stage 3 - Host, combos, Happy Hour |
+  +--------------------------------------------------------------------------+
+  | Revenue $9.00/$45.00   Paid 1/4   Avg satisfaction 92.0/60   Left 0      |
+  | Happy Hour used on turns 7-8                                             |
+  +--------------------------------------------------------------------------+
+
+  WAITING QUEUE --------------------------------------------------------------
+     nobody waiting
+
+  TABLES ---------------------------------------------------------------------
+   T1  #3 Chloe  VIP      ##########  95  Waiting for Pasta
+   T2  #2 Ben    Critic   ########..  82  Eating
+
+  KITCHEN --------------------------------------------------------------------
+     #2 Ben    Salad + Pasta Combo      $24.30   ###  3/3  SERVED
+     #3 Chloe  Pasta                    $12.96   ##   2/2  READY
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Host Hugo         wait
+     Waiter Wendy      serve 3  -  wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * Host Hugo has nothing useful to do and waits.
+  * WAITER WENDY  seat, order, serve, wait
+    try serve 3  -  wait
+  waiter > serve 3
+    + Wendy serves #3 Chloe's Pasta. Enjoy!
+
+  * Chef Carlo has nothing useful to do and waits.
+  ---- End of turn 9 ---------------------------------------------------------
+    + #2 Ben finishes eating and is ready to pay.
+
+  Served 3 - Unhappy departures 0 - Revenue $9.00 - Avg sat. 92.0 - Turns 9/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 10 of 18   ==========........    Stage 3 - Host, combos, Happy Hour |
+  +--------------------------------------------------------------------------+
+  | Revenue $9.00/$45.00   Paid 1/4   Avg satisfaction 92.0/60   Left 0      |
+  | Happy Hour used on turns 7-8                                             |
+  +--------------------------------------------------------------------------+
+
+    > #4 Dev (Regular) arrives and joins the queue with satisfaction 100.
+
+  WAITING QUEUE --------------------------------------------------------------
+     #4 Dev    Regular  ########## 100  Waiting for a table since turn 10
+
+  TABLES ---------------------------------------------------------------------
+   T1  #3 Chloe  VIP      ##########  95  Eating
+   T2  #2 Ben    Critic   ########..  82  Ready to pay
+
+  KITCHEN --------------------------------------------------------------------
+     #2 Ben    Salad + Pasta Combo      $24.30   ###  3/3  SERVED
+     #3 Chloe  Pasta                    $12.96   ##   2/2  SERVED
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Host Hugo         wait
+     Waiter Wendy      wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - will charge #2 Ben at turn end
+
+  * Host Hugo has nothing useful to do and waits.
+  * Waiter Wendy has nothing useful to do and waits.
+  * Chef Carlo has nothing useful to do and waits.
+  ---- End of turn 10 --------------------------------------------------------
+    + #3 Chloe finishes eating and is ready to pay.
+    $ Cassie collects $24.30 from #2 Ben (satisfaction 82 recorded). Table 2
+      is free. "4/5 stars: Confident cooking, attentive staff."
+    v #4 Dev (Waiting for a table): satisfaction 100 -> 92 (-8)
+
+  Served 3 - Unhappy departures 0 - Revenue $33.30 - Avg sat. 87.0 - Turns 10/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 11 of 18   ===========.......    Stage 3 - Host, combos, Happy Hour |
+  +--------------------------------------------------------------------------+
+  | Revenue $33.30/$45.00   Paid 2/4   Avg satisfaction 87.0/60   Left 0     |
+  | Happy Hour used on turns 7-8                                             |
+  +--------------------------------------------------------------------------+
+
+  WAITING QUEUE --------------------------------------------------------------
+     #4 Dev    Regular  #########.  92  Waiting for a table since turn 10
+
+  TABLES ---------------------------------------------------------------------
+   T1  #3 Chloe  VIP      ##########  95  Ready to pay
+   T2  free
+
+  KITCHEN --------------------------------------------------------------------
+     #3 Chloe  Pasta                    $12.96   ##   2/2  SERVED
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Host Hugo         seat 4 2  -  wait
+     Waiter Wendy      seat 4 2  -  wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - will charge #3 Chloe at turn end
+
+  * HOST HUGO  seat, wait
+    try seat 4 2  -  wait
+  host > seat 4 2
+    + Hugo seats #4 Dev at table 2.
+
+  * WAITER WENDY  seat, order, serve, wait
+    try order 4  -  wait
+  waiter > order 4
+    + Wendy takes #4 Dev's order: Salad + Burger Combo ($21.60).
+
+  * CHEF CARLO  cook, wait
+    try cook 4  -  wait
+  chef > cook 4
+    + Carlo works on #4 Dev's Salad + Burger Combo (1/2).
+
+  ---- End of turn 11 --------------------------------------------------------
+    $ Cassie collects $12.96 from #3 Chloe (satisfaction 95 recorded). Table 1
+      is free. "Splendid as always. I'll be back."
+    v #4 Dev (Waiting for Salad + Burger Combo): satisfaction 92 -> 84 (-8)
+
+  Served 3 - Unhappy departures 0 - Revenue $46.26 - Avg sat. 89.7 - Turns 11/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 12 of 18   ============......    Stage 3 - Host, combos, Happy Hour |
+  +--------------------------------------------------------------------------+
+  | Revenue $46.26/$45.00   Paid 3/4   Avg satisfaction 89.7/60   Left 0     |
+  | Happy Hour used on turns 7-8                                             |
+  +--------------------------------------------------------------------------+
+
+  WAITING QUEUE --------------------------------------------------------------
+     nobody waiting
+
+  TABLES ---------------------------------------------------------------------
+   T1  free
+   T2  #4 Dev    Regular  ########..  84  Waiting for Salad + Burger Combo
+
+  KITCHEN --------------------------------------------------------------------
+     #4 Dev    Salad + Burger Combo     $21.60   #.   1/2  In preparation
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Host Hugo         wait
+     Waiter Wendy      wait
+     Chef Carlo        cook 4  -  wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * Host Hugo has nothing useful to do and waits.
+  * Waiter Wendy has nothing useful to do and waits.
+  * CHEF CARLO  cook, wait
+    try cook 4  -  wait
+  chef > cook 4
+    + Carlo finishes #4 Dev's Salad + Burger Combo (2/2). It is READY.
+
+  ---- End of turn 12 --------------------------------------------------------
+    v #4 Dev (Waiting for Salad + Burger Combo): satisfaction 84 -> 76 (-8)
+
+  Served 3 - Unhappy departures 0 - Revenue $46.26 - Avg sat. 89.7 - Turns 12/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 13 of 18   =============.....    Stage 3 - Host, combos, Happy Hour |
+  +--------------------------------------------------------------------------+
+  | Revenue $46.26/$45.00   Paid 3/4   Avg satisfaction 89.7/60   Left 0     |
+  | Happy Hour used on turns 7-8                                             |
+  +--------------------------------------------------------------------------+
+
+    > #5 Elif (Regular) arrives and joins the queue with satisfaction 100.
+
+  WAITING QUEUE --------------------------------------------------------------
+     #5 Elif   Regular  ########## 100  Waiting for a table since turn 13
+
+  TABLES ---------------------------------------------------------------------
+   T1  free
+   T2  #4 Dev    Regular  ########..  76  Waiting for Salad + Burger Combo
+
+  KITCHEN --------------------------------------------------------------------
+     #4 Dev    Salad + Burger Combo     $21.60   ##   2/2  READY
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Host Hugo         seat 5 1  -  wait
+     Waiter Wendy      serve 4  -  seat 5 1  -  wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * HOST HUGO  seat, wait
+    try seat 5 1  -  wait
+  host > seat 5 1
+    + Hugo seats #5 Elif at table 1.
+
+  * WAITER WENDY  seat, order, serve, wait
+    try serve 4  -  order 5  -  wait
+  waiter > order 5
+    + Wendy takes #5 Elif's order: Salad + Pasta Combo ($24.30).
+
+  * CHEF CARLO  cook, wait
+    try cook 5  -  wait
+  chef > cook 5
+    + Carlo works on #5 Elif's Salad + Pasta Combo (1/3).
+
+  ---- End of turn 13 --------------------------------------------------------
+    v #4 Dev (Waiting for Salad + Burger Combo): satisfaction 76 -> 68 (-8)
+    v #5 Elif (Waiting for Salad + Pasta Combo): satisfaction 100 -> 92 (-8)
+
+  Served 3 - Unhappy departures 0 - Revenue $46.26 - Avg sat. 89.7 - Turns 13/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 14 of 18   ==============....    Stage 3 - Host, combos, Happy Hour |
+  +--------------------------------------------------------------------------+
+  | Revenue $46.26/$45.00   Paid 3/4   Avg satisfaction 89.7/60   Left 0     |
+  | Happy Hour used on turns 7-8                                             |
+  +--------------------------------------------------------------------------+
+
+  WAITING QUEUE --------------------------------------------------------------
+     nobody waiting
+
+  TABLES ---------------------------------------------------------------------
+   T1  #5 Elif   Regular  #########.  92  Waiting for Salad + Pasta Combo
+   T2  #4 Dev    Regular  #######...  68  Waiting for Salad + Burger Combo
+
+  KITCHEN --------------------------------------------------------------------
+     #4 Dev    Salad + Burger Combo     $21.60   ##   2/2  READY
+     #5 Elif   Salad + Pasta Combo      $24.30   #..  1/3  In preparation
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Host Hugo         wait
+     Waiter Wendy      serve 4  -  wait
+     Chef Carlo        cook 5  -  wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * Host Hugo has nothing useful to do and waits.
+  * WAITER WENDY  seat, order, serve, wait
+    try serve 4  -  wait
+  waiter > serve 4
+    + Wendy serves #4 Dev's Salad + Burger Combo. Enjoy!
+
+  * CHEF CARLO  cook, wait
+    try cook 5  -  wait
+  chef > cook 5
+    + Carlo works on #5 Elif's Salad + Pasta Combo (2/3).
+
+  ---- End of turn 14 --------------------------------------------------------
+    v #5 Elif (Waiting for Salad + Pasta Combo): satisfaction 92 -> 84 (-8)
+
+  Served 4 - Unhappy departures 0 - Revenue $46.26 - Avg sat. 89.7 - Turns 14/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 15 of 18   ===============...    Stage 3 - Host, combos, Happy Hour |
+  +--------------------------------------------------------------------------+
+  | Revenue $46.26/$45.00   Paid 3/4   Avg satisfaction 89.7/60   Left 0     |
+  | Happy Hour used on turns 7-8                                             |
+  +--------------------------------------------------------------------------+
+
+  WAITING QUEUE --------------------------------------------------------------
+     nobody waiting
+
+  TABLES ---------------------------------------------------------------------
+   T1  #5 Elif   Regular  ########..  84  Waiting for Salad + Pasta Combo
+   T2  #4 Dev    Regular  #######...  68  Eating
+
+  KITCHEN --------------------------------------------------------------------
+     #4 Dev    Salad + Burger Combo     $21.60   ##   2/2  SERVED
+     #5 Elif   Salad + Pasta Combo      $24.30   ##.  2/3  In preparation
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Host Hugo         wait
+     Waiter Wendy      wait
+     Chef Carlo        cook 5  -  wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * Host Hugo has nothing useful to do and waits.
+  * Waiter Wendy has nothing useful to do and waits.
+  * CHEF CARLO  cook, wait
+    try cook 5  -  wait
+  chef > cook 5
+    + Carlo finishes #5 Elif's Salad + Pasta Combo (3/3). It is READY.
+
+  ---- End of turn 15 --------------------------------------------------------
+    + #4 Dev finishes eating and is ready to pay.
+    v #5 Elif (Waiting for Salad + Pasta Combo): satisfaction 84 -> 76 (-8)
+
+  Served 4 - Unhappy departures 0 - Revenue $46.26 - Avg sat. 89.7 - Turns 15/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 16 of 18   ================..    Stage 3 - Host, combos, Happy Hour |
+  +--------------------------------------------------------------------------+
+  | Revenue $46.26/$45.00   Paid 3/4   Avg satisfaction 89.7/60   Left 0     |
+  | Happy Hour used on turns 7-8                                             |
+  +--------------------------------------------------------------------------+
+
+    > #6 Farid (Regular) arrives and joins the queue with satisfaction 100.
+
+  WAITING QUEUE --------------------------------------------------------------
+     #6 Farid  Regular  ########## 100  Waiting for a table since turn 16
+
+  TABLES ---------------------------------------------------------------------
+   T1  #5 Elif   Regular  ########..  76  Waiting for Salad + Pasta Combo
+   T2  #4 Dev    Regular  #######...  68  Ready to pay
+
+  KITCHEN --------------------------------------------------------------------
+     #4 Dev    Salad + Burger Combo     $21.60   ##   2/2  SERVED
+     #5 Elif   Salad + Pasta Combo      $24.30   ###  3/3  READY
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Host Hugo         wait
+     Waiter Wendy      serve 5  -  wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - will charge #4 Dev at turn end
+
+  * Host Hugo has nothing useful to do and waits.
+  * WAITER WENDY  seat, order, serve, wait
+    try serve 5  -  wait
+  waiter > serve 5
+    + Wendy serves #5 Elif's Salad + Pasta Combo. Enjoy!
+
+  * Chef Carlo has nothing useful to do and waits.
+  ---- End of turn 16 --------------------------------------------------------
+    $ Cassie collects $21.60 from #4 Dev (satisfaction 68 recorded). Table 2
+      is free. "Not bad at all."
+    v #6 Farid (Waiting for a table): satisfaction 100 -> 92 (-8)
+
+  Served 5 - Unhappy departures 0 - Revenue $67.86 - Avg sat. 84.3 - Turns 16/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 17 of 18   =================.    Stage 3 - Host, combos, Happy Hour |
+  +--------------------------------------------------------------------------+
+  | Revenue $67.86/$45.00   Paid 4/4   Avg satisfaction 84.3/60   Left 0     |
+  | Happy Hour used on turns 7-8                                             |
+  +--------------------------------------------------------------------------+
+
+  WAITING QUEUE --------------------------------------------------------------
+     #6 Farid  Regular  #########.  92  Waiting for a table since turn 16
+
+  TABLES ---------------------------------------------------------------------
+   T1  #5 Elif   Regular  ########..  76  Eating
+   T2  free
+
+  KITCHEN --------------------------------------------------------------------
+     #5 Elif   Salad + Pasta Combo      $24.30   ###  3/3  SERVED
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Host Hugo         seat 6 2  -  wait
+     Waiter Wendy      seat 6 2  -  wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * HOST HUGO  seat, wait
+    try seat 6 2  -  wait
+  host > seat 6 2
+    + Hugo seats #6 Farid at table 2.
+
+  * WAITER WENDY  seat, order, serve, wait
+    try order 6  -  wait
+  waiter > order 6
+    + Wendy takes #6 Farid's order: Salad ($9.00).
+
+  * CHEF CARLO  cook, wait
+    try cook 6  -  wait
+  chef > cook 6
+    + Carlo finishes #6 Farid's Salad (1/1). It is READY.
+
+  ---- End of turn 17 --------------------------------------------------------
+    + #5 Elif finishes eating and is ready to pay.
+    v #6 Farid (Waiting for Salad): satisfaction 92 -> 84 (-8)
+
+  Served 5 - Unhappy departures 0 - Revenue $67.86 - Avg sat. 84.3 - Turns 17/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 18 of 18   ==================    Stage 3 - Host, combos, Happy Hour |
+  +--------------------------------------------------------------------------+
+  | Revenue $67.86/$45.00   Paid 4/4   Avg satisfaction 84.3/60   Left 0     |
+  | Happy Hour used on turns 7-8                                             |
+  +--------------------------------------------------------------------------+
+
+  WAITING QUEUE --------------------------------------------------------------
+     nobody waiting
+
+  TABLES ---------------------------------------------------------------------
+   T1  #5 Elif   Regular  ########..  76  Ready to pay
+   T2  #6 Farid  Regular  ########..  84  Waiting for Salad
+
+  KITCHEN --------------------------------------------------------------------
+     #5 Elif   Salad + Pasta Combo      $24.30   ###  3/3  SERVED
+     #6 Farid  Salad                     $9.00   #    1/1  READY
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Host Hugo         wait
+     Waiter Wendy      serve 6  -  wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - will charge #5 Elif at turn end
+
+  * Host Hugo has nothing useful to do and waits.
+  * WAITER WENDY  seat, order, serve, wait
+    try serve 6  -  wait
+  waiter > serve 6
+    + Wendy serves #6 Farid's Salad. Enjoy!
+
+  * Chef Carlo has nothing useful to do and waits.
+  ---- End of turn 18 --------------------------------------------------------
+    $ Cassie collects $24.30 from #5 Elif (satisfaction 76 recorded). Table 1
+      is free. "Not bad at all."
+
+  Served 6 - Unhappy departures 0 - Revenue $92.16 - Avg sat. 82.6 - Turns 18/18
+
+
+     V I C T O R Y
+     The dining room hums. Every target was met.
+
+  TARGETS --------------------------------------------------------------------
+     +  Paid customers                   5   at least 4
+     +  Revenue                     $92.16   at least $45.00
+     +  Average satisfaction          82.6   at least 60
+
+  GUESTS ---------------------------------------------------------------------
+     Guest      Type     Ordered                Bill  Sat.   Outcome
+     #1 Ada     Regular  Salad                 $9.00    92   Paid
+     #2 Ben     Critic   Salad + Pasta Combo  $24.30    82   Paid
+     #3 Chloe   VIP      Pasta                $12.96    95   Paid
+     #4 Dev     Regular  Salad + Burger Combo $21.60    68   Paid
+     #5 Elif    Regular  Salad + Pasta Combo  $24.30    76   Paid
+     #6 Farid   Regular  Salad                 $9.00    84   Eating
+
+  Served 6 - Unhappy departures 0 - Revenue $92.16 - Avg sat. 82.6 - Turns 18/18
+
+   1  Play the base setting
+   2  How to play
+   3  Quit
+
+  > 3
+  Thanks for playing. The kitchen is closed.

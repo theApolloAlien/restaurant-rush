@@ -6,6 +6,8 @@ import java.util.Optional;
 
 import rush.model.Customer;
 import rush.model.Restaurant;
+import rush.model.RuleViolation;
+import rush.policy.HappyHour;
 import rush.policy.PricingPolicy;
 import rush.staff.ActionResult;
 import rush.staff.Cashier;
@@ -20,7 +22,8 @@ import rush.staff.TurnContext;
  * <p>
  * A turn is driven by the interface like this:
  * <pre>
- *   beginTurn()                     step 1  arrivals
+ *   beginTurn()                     step 1  arrivals (and Happy Hour recovery)
+ *   startHappyHour()                optional, before any staff member acts
  *   direct(staff, command) ...      step 2-3 manager choices, kitchen and serving
  *   endTurn()                       steps 4-5 eating, payment, waiting, abandonment
  *   ... after the last turn: result()   step 6
@@ -32,17 +35,20 @@ public class Game {
     private final Restaurant restaurant;
     private final List<DirectedStaff> directedStaff;
     private final Cashier cashier;
+    private final HappyHour happyHour;
     private final PricingPolicy pricing;
 
     private int turn;
     private boolean turnInProgress;
+    private boolean staffHaveActed;
 
     public Game(GameConfig config) {
         this.config = config;
         this.restaurant = new Restaurant(config.menu(), config.tableCount());
         this.directedStaff = config.hireDirectedStaff();
         this.cashier = config.hireCashier();
-        this.pricing = new PricingPolicy();
+        this.happyHour = new HappyHour();
+        this.pricing = new PricingPolicy(List.of(happyHour));
     }
 
     // ------------------------------------------------------------------
@@ -59,6 +65,7 @@ public class Game {
         }
         turn++;
         turnInProgress = true;
+        staffHaveActed = false;
         allStaff().forEach(StaffMember::startTurn);
 
         List<GameEvent> events = new ArrayList<>();
@@ -68,6 +75,44 @@ public class Game {
             events.add(new GameEvent(GameEvent.Kind.ARRIVAL, customer.label() + " (" + customer.type()
                     + ") arrives and joins the queue with satisfaction " + customer.satisfaction() + "."));
         });
+        events.addAll(happyHourRecovery());
+        return events;
+    }
+
+    /**
+     * Switches Happy Hour on for this turn and the next. Allowed once per game,
+     * at the start of a turn (before any staff member has acted).
+     */
+    public ActionResult startHappyHour() {
+        requireTurnInProgress();
+        if (staffHaveActed) {
+            return ActionResult.rejected("Happy Hour can only start at the beginning of a turn, "
+                    + "before any staff member acts.");
+        }
+        try {
+            happyHour.activate(turn);
+        } catch (RuleViolation violation) {
+            return ActionResult.rejected(violation.getMessage());
+        }
+        List<GameEvent> recovery = happyHourRecovery();
+        return ActionResult.done("Happy Hour is ON for turns " + happyHour.startTurn() + "-"
+                + happyHour.lastTurn() + " (" + happyHour.turnsRemaining(turn) + " turns left, including this one): "
+                + HappyHour.DISCOUNT_PERCENT + "% off orders taken, " + recovery.size()
+                + (recovery.size() == 1 ? " waiting guest" : " waiting guests")
+                + " +" + HappyHour.RECOVERY + " satisfaction.");
+    }
+
+    /** True if Happy Hour has not been used and no staff member has acted yet this turn. */
+    public boolean canStartHappyHour() {
+        return turnInProgress && !staffHaveActed && happyHour.isAvailable();
+    }
+
+    private List<GameEvent> happyHourRecovery() {
+        List<GameEvent> events = new ArrayList<>();
+        for (Customer customer : happyHour.refresh(restaurant, turn)) {
+            events.add(new GameEvent(GameEvent.Kind.POLICY, "Happy Hour: " + customer.label()
+                    + " perks up to satisfaction " + customer.satisfaction() + "."));
+        }
         return events;
     }
 
@@ -78,7 +123,9 @@ public class Game {
      */
     public ActionResult direct(DirectedStaff staff, Command command) {
         requireTurnInProgress();
-        return staff.perform(command, context());
+        ActionResult result = staff.perform(command, context());
+        staffHaveActed |= result.succeeded();
+        return result;
     }
 
     /** What a staff member could usefully do right now. */
@@ -110,8 +157,8 @@ public class Game {
         for (Customer customer : restaurant.awaitingService()) {
             int before = customer.satisfaction();
             int lost = customer.loseSatisfaction();
-            events.add(new GameEvent(GameEvent.Kind.PATIENCE, customer.label() + " "
-                    + customer.statusDescription().toLowerCase() + ": satisfaction " + before + " -> "
+            events.add(new GameEvent(GameEvent.Kind.PATIENCE, customer.label() + " ("
+                    + customer.statusDescription() + "): satisfaction " + before + " -> "
                     + customer.satisfaction() + " (-" + lost + ")"));
             if (customer.isUnhappy()) {
                 restaurant.depart(customer);
@@ -166,6 +213,11 @@ public class Game {
 
     public Cashier cashier() {
         return cashier;
+    }
+
+    /** Read access for display: availability, active turns and turns remaining. */
+    public HappyHour happyHour() {
+        return happyHour;
     }
 
     /** The customer the Cashier will charge at the end of this turn, if any. */

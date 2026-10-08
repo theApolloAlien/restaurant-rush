@@ -111,8 +111,71 @@ Strategy: serve › order › seat, Chef cooks immediately.
 ### Defeat run: `scripts/stage2-defeat.txt`
 
 The same rookie strategy as Stage 1 (seat › serve › order, Chef never cooks on the
-turn an order is taken). The Critic now waits so long that he pays at satisfaction 40
-and posts a 2-star review.
+turn an order is taken). The Critic now waits so long that they pay at satisfaction 40
+and post a 2-star review.
 
 **Result: DEFEAT on all three targets.** 3 paid, revenue **$43.20**, average
 satisfaction **59.3**. Transcript: [`transcripts/stage2-defeat.txt`](transcripts/stage2-defeat.txt).
+
+## Stage 3: Host, ComboMeal and Happy Hour
+
+Same arrivals as Stage 2. New in this stage:
+
+* **Host Hugo** seats at most one queued customer per turn, in addition to the
+  Waiter's task. The Host acts first, so the Waiter may take that customer's order in
+  the same turn (and the Chef may start cooking it).
+* **Combos** follow the three dishes on the menu board:
+  Salad + Burger Combo ($21.60, 2 units) and Salad + Pasta Combo ($24.30, 3 units).
+  **Combo rule:** customers still read the board in rotation by arrival number, so
+  guests #4 and #5 order the two combos; the Critic orders the most elaborate item,
+  which is now the 3-unit Salad + Pasta Combo.
+* **Happy Hour** is offered at the start of every turn until it is used
+  (`happy hour now? [y/N]`). It lasts that turn and the next; the header shows the
+  turns remaining.
+* Staff with nothing useful to do now wait automatically, so the manager is only
+  asked when there is a real choice.
+
+### Victory run: `scripts/stage3-victory.txt`
+
+Strategy: take orders › serve › seat, Host seats every arrival, Happy Hour on turn 7.
+
+* Turn 1: the Host seats Ada, the Waiter takes her order and the Chef finishes the
+  Salad in the **same turn**, which was impossible before the Host existed.
+* Turn 4: the Critic orders the **Salad + Pasta Combo ($24.30, 3 units)**.
+* **Turn 7 (constrained choice):** the Critic's combo is READY, but the manager
+  switches on **Happy Hour** and has the Waiter take the VIP's order first, so the
+  VIP's Pasta is locked at **$18.00 × 0.9 × 0.8 = $12.96**. The Critic recovers +15
+  (64 → 79). The header shows `HAPPY HOUR ON 1 turn left (last turn)` on turn 8, and
+  both waiting guests recover again (Critic 67 → 82, VIP 95 → 100).
+* Turn 8: the Critic is served at 82 and later writes "4/5 stars".
+
+**Result: VICTORY.** 5 paid, revenue **$92.16**, average satisfaction **82.6**
+(92, 82, 95, 68, 76). Transcript: [`transcripts/stage3-victory.txt`](transcripts/stage3-victory.txt).
+
+### Defeat run: `scripts/stage3-defeat.txt`
+
+The rookie strategy again (seat › serve › order, Chef never cooks on the turn an
+order is taken), but the manager also **ignores the new Host** and switches Happy
+Hour on **too late** (turn 14). The discount only reaches Dev's combo ($21.60 → $17.28),
+who never gets to pay before closing.
+
+**Result: DEFEAT.** 3 paid (needs 4), revenue $49.50, average satisfaction
+**57.0** (needs 60). Transcript: [`transcripts/stage3-defeat.txt`](transcripts/stage3-defeat.txt).
+
+### How choices change the result (Stage 3)
+
+| Waiter priority | Chef same turn | Host used | Happy Hour | Paid | Revenue | Avg sat. | Result |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|---|
+| order › serve › seat | yes | yes | turn 7 | 5 | $92.16 | 82.6 | Victory |
+| order › serve › seat | yes | yes | never | 5 | $95.40 | 75.6 | Victory |
+| serve › order › seat | yes | yes | turn 7 | 4 | $67.86 | 84.3 | Victory |
+| order › serve › seat | yes | **no** | turn 7 | 4 | $67.86 | 74.0 | Victory |
+| seat › serve › order | no | **yes** | turn 7 | 4 | $67.86 | 81.0 | **Victory** |
+| seat › serve › order | no | **no** | turn 7 | 3 | $49.50 | 68.7 | Defeat |
+| seat › serve › order | no | no | turn 14 | 3 | $49.50 | 57.0 | Defeat |
+
+* With a Host, the best Waiter priority **changes**: taking the order first beats
+  serving first (5 paid instead of 4), because the Host has already done the seating.
+* Using the Host alone turns the rookie strategy from Defeat into Victory.
+* Happy Hour trades revenue for satisfaction: on turn 7 it costs $3.24 of revenue but
+  lifts the average from 75.6 to 82.6.

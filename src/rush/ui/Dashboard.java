@@ -16,6 +16,7 @@ import rush.model.MenuItem;
 import rush.model.Order;
 import rush.model.OrderStatus;
 import rush.model.Table;
+import rush.policy.HappyHour;
 import rush.staff.ActionResult;
 import rush.staff.Command;
 import rush.staff.DirectedStaff;
@@ -68,6 +69,8 @@ public final class Dashboard {
                 "served loses satisfaction at the end of every turn and leaves at 0.",
                 "The Waiter acts before the Chef, so a dish finished this turn is served next turn.",
                 "A served customer eats for one turn, then the Cashier collects one bill per turn.");
+        paragraph("The Host seats one queued customer per turn on top of the Waiter's task.",
+                "Happy Hour can be switched on once, at the start of a turn, for that turn and the next.");
         term.println();
         section("GUESTS");
         guestType(t.gray("Regular"), "loses 8 per waiting turn", "pays full price");
@@ -75,7 +78,7 @@ public final class Dashboard {
         guestType(t.purple("Critic"), "loses 12 per waiting turn", "always orders the most elaborate dish");
         term.println();
         section("COMMANDS");
-        commandHelp("seat <customer> [table]", "Waiter: seat a queued customer (default: first free table)");
+        commandHelp("seat <customer> [table]", "Host or Waiter: seat a queued customer (default: first free table)");
         commandHelp("order <customer>", "Waiter: take a seated customer's order (they choose the food)");
         commandHelp("serve <customer>", "Waiter: serve that customer's READY dish");
         commandHelp("cook <customer>", "Chef: spend one preparation unit on that customer's order");
@@ -94,11 +97,12 @@ public final class Dashboard {
         for (MenuItem item : menu.items()) {
             term.println("     " + Theme.padRight(t.bold(item.name()), 26)
                     + Theme.padLeft(item.price().toString(), 8) + "   "
-                    + t.pips(item.prepUnits(), item.prepUnits()) + " " + t.gray(units(item.prepUnits())));
+                    + Theme.padRight(t.pips(item.prepUnits(), item.prepUnits()), 4) + t.gray(units(item.prepUnits())));
         }
+        term.println("     " + t.gray("Combos cost 90% of their two dishes and take the sum of their units."));
         term.println("     " + t.gray("Customers choose their own food: guest #n orders item n on the board,"));
-        term.println("     " + t.gray("wrapping around (Salad, Burger, Pasta, Salad, ...). A Critic always"));
-        term.println("     " + t.gray("orders the most elaborate dish (most preparation units)."));
+        term.println("     " + t.gray("wrapping around, so guests #4 and #5 order the combos. A Critic always"));
+        term.println("     " + t.gray("orders the most elaborate item (most preparation units)."));
         term.println();
     }
 
@@ -141,6 +145,7 @@ public final class Dashboard {
         boxLine(spread(left, right));
         term.println("  " + t.faint(t.teeLeft() + t.line(WIDTH + 2) + t.teeRight()));
         boxLine(stats);
+        boxLine(happyHourStatus(game.happyHour(), game.turn()));
         term.println("  " + t.faint(t.botLeft() + t.line(WIDTH + 2) + t.botRight()));
         term.println();
     }
@@ -224,16 +229,46 @@ public final class Dashboard {
         term.println("    " + t.gray("try ") + hints);
     }
 
+    public void happyHourOffer() {
+        term.println("  " + t.gold(t.diamond() + " HAPPY HOUR") + t.gray("  once per game, runs this turn and next"));
+        term.println("    " + t.gray(HappyHour.DISCOUNT_PERCENT + "% off new orders "
+                + t.bullet() + " guests still waiting +" + HappyHour.RECOVERY + " satisfaction per turn"));
+    }
+
+    public String happyHourPrompt() {
+        return "  " + t.gold("happy hour now? ") + t.gray("[y/N]") + " " + t.gold(t.arrow()) + " ";
+    }
+
+    public void autoWait(DirectedStaff staff) {
+        term.println("  " + t.faint(t.diamond() + " " + staff.title() + " has nothing useful to do and waits."));
+    }
+
+    private String happyHourStatus(HappyHour happyHour, int turn) {
+        if (happyHour.isActiveOn(turn)) {
+            int left = happyHour.turnsRemaining(turn);
+            return t.gold(t.bold("HAPPY HOUR ON")) + t.gold("  " + left + (left == 1 ? " turn" : " turns")
+                    + " left" + (left == 1 ? " (last turn)" : " (this turn and next)")) + t.gray("  "
+                    + t.bullet() + "  " + HappyHour.DISCOUNT_PERCENT + "% off new orders");
+        }
+        if (happyHour.isAvailable()) {
+            return t.gray("Happy Hour available " + t.bullet() + " once per game, offered at the start of each turn");
+        }
+        return t.faint("Happy Hour used on turns " + happyHour.startTurn() + "-" + happyHour.lastTurn());
+    }
+
     public String promptText(DirectedStaff staff) {
         return "  " + t.accent(staff.role().toLowerCase()) + " " + t.accent(t.arrow()) + " ";
     }
 
     public void actionResult(ActionResult result) {
+        List<String> lines = wrap(result.message(), WIDTH - 2);
         if (result.succeeded()) {
-            term.println("    " + t.green(t.tick() + " " + result.message()));
+            term.println("    " + t.green(t.tick() + " " + lines.get(0)));
+            lines.subList(1, lines.size()).forEach(more -> term.println("      " + t.green(more)));
             term.println();
         } else {
-            term.println("    " + t.red(t.cross() + " " + result.message()));
+            term.println("    " + t.red(t.cross() + " " + lines.get(0)));
+            lines.subList(1, lines.size()).forEach(more -> term.println("      " + t.red(more)));
             term.println("    " + t.gray("  Nothing was used up. Choose again."));
         }
     }
@@ -316,16 +351,16 @@ public final class Dashboard {
         term.println();
 
         section("GUESTS");
-        term.println("     " + t.gray(Theme.padRight("Guest", 12) + Theme.padRight("Type", 10)
+        term.println("     " + t.gray(Theme.padRight("Guest", 11) + Theme.padRight("Type", 9)
                 + Theme.padRight("Ordered", 20) + Theme.padLeft("Bill", 7) + Theme.padLeft("Sat.", 6)
                 + "   Outcome"));
         for (Customer c : game.restaurant().guests()) {
             String ordered = c.order().map(o -> o.item().name()).orElse("-");
             String bill = c.order().map(o -> o.price().toString()).orElse("-");
-            term.println("     " + Theme.padRight(customerName(c), 12) + Theme.padRight(typeTag(c), 10)
+            term.println("     " + Theme.padRight(customerName(c), 11) + Theme.padRight(typeTag(c), 9)
                     + Theme.padRight(ordered, 20) + Theme.padLeft(bill, 7)
                     + Theme.padLeft(t.bySatisfaction(c.satisfaction(), String.valueOf(c.satisfaction())), 6)
-                    + "   " + status(c));
+                    + "   " + status(c, c.status().label()));
         }
         term.println();
         summary(result.score());
@@ -358,7 +393,10 @@ public final class Dashboard {
     }
 
     private String status(Customer c) {
-        String text = c.statusDescription();
+        return status(c, c.statusDescription());
+    }
+
+    private String status(Customer c, String text) {
         CustomerStatus s = c.status();
         return switch (s) {
             case WAITING -> t.gold(text);
@@ -387,6 +425,7 @@ public final class Dashboard {
             case PAYMENT -> t.gold("$");
             case PATIENCE -> t.faint(t.down());
             case DEPARTURE -> t.red(t.cross());
+            case POLICY -> t.gold(t.diamond());
         };
     }
 
@@ -397,6 +436,7 @@ public final class Dashboard {
             case PAYMENT -> t.gold(text);
             case PATIENCE -> t.gray(text);
             case DEPARTURE -> t.red(text);
+            case POLICY -> t.gold(text);
         };
     }
 
