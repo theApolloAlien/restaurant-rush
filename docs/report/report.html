@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Restaurant Rush: Design Report</title>
+<link rel="stylesheet" href="report.css">
+</head>
+<body>
+
+<!-- =============================================================== COVER -->
+<section class="cover">
+  <div class="inner">
+    <div class="kicker">SC2002 Object-Oriented Design &amp; Programming · Group Assignment</div>
+    <h1>Restaurant<br><span>Rush</span></h1>
+    <p class="sub">A turn-based restaurant management game for the command line, built in three
+      tagged stages. Design report: UML, design discussion, functional evidence and reflection.</p>
+    <div class="plate">
+      <div><b>3</b><small>tagged, runnable stages</small></div>
+      <div><b>22</b><small>automated rule checks</small></div>
+      <div><b>6</b><small>reproducible scripted runs</small></div>
+    </div>
+  </div>
+  <div class="term-art">╦═╗┌─┐┌─┐┌┬┐┌─┐┬ ┬┬─┐┌─┐┌┐┌┌┬┐  ╦═╗┬ ┬┌─┐┬ ┬
+╠╦╝├┤ └─┐ │ ├─┤│ │├┬┘├─┤│││ │   ╠╦╝│ │└─┐├─┤
+╩╚═└─┘└─┘ ┴ ┴ ┴└─┘┴└─┴ ┴┘└┘ ┴   ╩╚═└─┘└─┘┴ ┴</div>
+  <div class="band"></div>
+  <dl class="meta">
+    <div><dt>Lab group / team</dt><dd><span class="fill">[LAB GROUP] · Group [N]</span></dd></div>
+    <div><dt>Repository</dt><dd><span class="fill">https://github.com/[ORG]/restaurant-rush</span></dd></div>
+    <div><dt>Members</dt><dd><span class="fill">[Member 1] · [Member 2] · [Member 3] · [Member 4] · [Member 5]</span></dd></div>
+    <div><dt>Build</dt><dd>Java 17+, no external libraries · <code style="background:#ffffff1a;color:#fff">./run.sh</code></dd></div>
+  </dl>
+</section>
+
+<!-- =============================================================== CONTENTS -->
+<section class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><span class="n">1</span> Overview: the game, how to run it, the three stages <small>{{PAGE_1}}</small></li>
+    <li><span class="n">2</span> UML class diagram (final design, Stage 3) <small>{{PAGE_2}}</small></li>
+    <li><span class="n">3</span> UML sequence diagram: a VIP order during Happy Hour <small>{{PAGE_3}}</small></li>
+    <li><span class="n">4</span> Design discussion: abstractions, principles, trade-offs <small>{{PAGE_4}}</small></li>
+    <li><span class="n">5</span> How the player's choices change the result <small>{{PAGE_5}}</small></li>
+    <li><span class="n">6</span> Development process: stages, tags and change analysis <small>{{PAGE_6}}</small></li>
+    <li><span class="n">7</span> Functional evidence: runs, screens and rule checks <small>{{PAGE_7}}</small></li>
+    <li><span class="n">8</span> Rule interpretations we documented <small>{{PAGE_8}}</small></li>
+    <li><span class="n">9</span> Reflection <small>{{PAGE_9}}</small></li>
+  </ol>
+  <div class="callout gold" style="margin-top:10mm">
+    <b>Before submitting</b>
+    Fill in the highlighted fields (<span class="fill">like this</span>) on the cover, in §6 and in §9,
+    then rebuild with <code>python3 docs/report/build.py</code>. Page numbers are filled in by the build.
+  </div>
+</section>
+
+<!-- =============================================================== 1 OVERVIEW -->
+<section>
+  <h2><span class="num">1</span>Overview</h2>
+  <p class="lede">The player is the restaurant manager. Every turn they decide what each member of staff
+    does. Staff time is scarce, so the real decision is always <em>who comes first</em>: seat the new
+    arrival, take an order, or serve the dish that is getting cold?</p>
+
+  <div class="grid2">
+    <div class="card">
+      <h4>Base setting (always offered)</h4>
+      <ul>
+        <li><b>18 turns</b>, <b>2 tables</b>, no early ending</li>
+        <li>Waiter, Chef, Cashier: 1 task each per turn</li>
+        <li>Arrivals on turns 1, 4, 7, 10, 13, 16</li>
+        <li>Salad $9 (1 unit), Burger $15 (1), Pasta $18 (2)</li>
+        <li><b>Win</b>: ≥ 4 paid, ≥ $45, avg satisfaction ≥ 60</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Run it</h4>
+<pre style="font:7.3pt/1.6 var(--mono);margin:0;background:#f9fafb;padding:2.5mm;border-radius:1.5mm;white-space:pre">./run.sh              # build and play
+./run.sh --script scripts/stage3-victory.txt
+./run.sh --plain      # no colour, ASCII
+./test.sh             # 22 rule checks
+git checkout stage-1  # any stage, then ./run.sh</pre>
+      <p class="small" style="margin-top:2mm">Windows: <code>run.bat</code> / <code>test.bat</code>. Needs only a JDK (17+);
+        no build tool, no network.</p>
+    </div>
+  </div>
+
+  <h3>One turn</h3>
+  <table class="compact">
+    <tr><th style="width:9%">Step</th><th style="width:25%">What happens</th><th>Where the rule lives</th></tr>
+    <tr><td>0</td><td>Start-of-turn display</td><td><code>Dashboard.turnHeader/board</code> (turn, revenue, average, queue, tables, satisfaction bars, order status, staff tasks available, Happy Hour status)</td></tr>
+    <tr><td>1</td><td>Arrivals</td><td><code>Game.beginTurn</code> asks <code>ArrivalSchedule.arrivingOn(turn)</code> and calls <code>Restaurant.admit</code></td></tr>
+    <tr><td>2</td><td>Manager choices</td><td><code>ConsoleUI</code> collects one command per <code>DirectedStaff</code>; <code>DirectedStaff.perform</code> validates (Host → Waiter → Chef)</td></tr>
+    <tr><td>3</td><td>Kitchen and serving</td><td><code>Order.prepareUnit</code> (READY on the last unit) and <code>Order.serve</code> (only if READY <em>before</em> this turn)</td></tr>
+    <tr><td>4</td><td>Eating and payment</td><td><code>Customer.finishEating</code>, then <code>Cashier.collectPayment</code> (one per turn, oldest first, only if ready on an earlier turn)</td></tr>
+    <tr><td>5</td><td>Waiting and abandonment</td><td><code>Customer.loseSatisfaction</code> (polymorphic rate) and <code>Restaurant.depart</code> at 0</td></tr>
+    <tr><td>6</td><td>Result (after turn 18)</td><td><code>Objective.evaluate(Scoreboard)</code> → <code>GameResult</code></td></tr>
+  </table>
+
+  <h3>The three stages</h3>
+  <table>
+    <tr><th>Tag</th><th>Adds</th><th>Base-setting lineup</th><th class="c">Rule checks</th></tr>
+    <tr><td><span class="tag">stage-1</span></td><td>Regular customers, menu, Waiter, Chef, Cashier, full turn sequence, both endings</td><td>6 × Regular</td><td class="c">12</td></tr>
+    <tr><td><span class="tag">stage-2</span></td><td><code>VIPCustomer</code>, <code>CriticCustomer</code></td><td>Regular, <b>Critic</b> (T4), <b>VIP</b> (T7), 3 × Regular</td><td class="c">16</td></tr>
+    <tr><td><span class="tag">stage-3</span></td><td><code>Host</code>, <code>ComboMeal</code>, Happy Hour</td><td>as Stage 2, plus Host and combos</td><td class="c">22</td></tr>
+  </table>
+
+
+</section>
+
+<!-- =============================================================== 2 CLASS DIAGRAM -->
+<section class="wide-page">
+  <h2><span class="num">2</span>UML class diagram: final design (Stage 3)</h2>
+  <p class="caption">Every class, attribute, operation and relationship below is taken from the code at tag
+    <span class="tag">stage-3</span>. Getters, <code>toString()</code> and private helpers are omitted.
+    Notes annotate encapsulation, polymorphism and composition. Source: <code>docs/diagrams/class_diagram.py</code>.</p>
+  <div class="diagram class">{{CLASS_DIAGRAM}}</div>
+</section>
+
+<section>
+  <h2 style="break-before:avoid"><span class="num">2.1</span>Reading the class diagram</h2>
+  <div class="grid2">
+    <div class="card">
+      <h4>Encapsulation</h4>
+      <p><code>Money</code> is immutable and stores integer <b>cents</b>, so $9.00 + $15.00 is exactly
+        $24.00 and VIP and Happy Hour discounts round once per step.</p>
+      <p><code>Restaurant</code> is the only object that moves a customer between the queue, a table
+        and the door. <code>Table.assign/release</code> and <code>Customer.seatAt/placeOrder/pay/leave</code>
+        are package-private (<code>~</code>), and every collection is returned read-only. The UI cannot
+        put the game into an impossible state even by accident.</p>
+    </div>
+    <div class="card">
+      <h4>Polymorphism</h4>
+      <p><code>Customer</code> owns the visit life cycle. Subclasses override only three hooks:
+        <code>satisfactionLossPerTurn()</code>, <code>chooseFrom(Menu)</code> and
+        <code>billFor(Money)</code>. <code>Game</code>, <code>Waiter</code> and <code>Cashier</code> never ask a
+        customer's type.</p>
+      <p><code>MenuItem.price()/prepUnits()</code> are answered differently by <code>Dish</code> and
+        <code>ComboMeal</code>; <code>Order</code> and <code>Chef</code> treat both the same.</p>
+    </div>
+    <div class="card">
+      <h4>Composition and aggregation</h4>
+      <p>◆ <code>Game</code> owns its restaurant, staff, Happy Hour and pricing policy; they live and die
+        with one game. ◆ <code>Restaurant</code> owns its 2 tables and its orders.</p>
+      <p>◇ <code>Restaurant</code> aggregates customers, who arrive from outside. ◇ A <code>ComboMeal</code>
+        aggregates 2 existing <code>Dish</code>es that also appear on the menu on their own.</p>
+    </div>
+    <div class="card">
+      <h4>Inheritance and interfaces</h4>
+      <p><code>StaffMember</code> holds the per-turn task budget. <code>DirectedStaff</code> adds the
+        manager-facing template method <code>perform()</code>; <code>Waiter</code>, <code>Chef</code> and
+        <code>Host</code> fill in <code>duties()</code> and <code>carryOut()</code>. <code>Cashier</code> is
+        automatic, so it extends <code>StaffMember</code> only.</p>
+      <p><code>PriceModifier</code> is the one interface, implemented by <code>HappyHour</code>.</p>
+    </div>
+  </div>
+  <div class="callout blue">
+    <b>Layers</b>
+    <span class="pill ui">rush.ui</span> boundary: reads input, draws the screen, no rules ·
+    <span class="pill ctl">rush.control</span> the turn sequence and setting ·
+    <span class="pill staff">rush.staff</span> what each role may do ·
+    <span class="pill pol">rush.policy</span> pricing rules ·
+    <span class="pill ent">rush.model</span> entities and their invariants.
+    Dependencies point one way: <code>ui → control → staff → policy → model</code>.
+  </div>
+  <p class="small">Records (<code>Command</code>, <code>ActionResult</code>, <code>TurnContext</code>,
+    <code>Objective</code>, <code>Scoreboard</code>, <code>GameResult</code>, <code>GameEvent</code>) are immutable value
+    carriers; their components are public final by construction.</p>
+</section>
+
+<!-- =============================================================== 3 SEQUENCE -->
+<section>
+  <h2><span class="num">3</span>UML sequence diagram</h2>
+  <p class="lede">Scenario: the Stage 3 victory run (<code>scripts/stage3-victory.txt</code>), following
+    <b>VIP customer #3 Chloe</b> from arrival on turn 7 to payment on turn 11, then the result check.</p>
+  <table>
+    <tr><th>Requirement</th><th>Where it appears</th></tr>
+    <tr><td>Customer arrival and order</td><td>Part A, messages 1–4 and 22–36: <code>arrivingOn</code>, <code>admit</code>, <code>chooseFrom</code>, <code>placeOrder</code>, <code>«create» Order</code></td></tr>
+    <tr><td>Waiter and Chef assignments</td><td>Part A: <code>direct(host…)</code>, <code>direct(waiter…)</code>, <code>direct(chef…)</code>; Part B turns 8 and 9</td></tr>
+    <tr><td>READY then SERVED</td><td>Part B: <code>prepareUnit(8)</code> sets READY; <code>serve(9)</code> guarded by <code>[status == READY, readyTurn &lt; turn]</code></td></tr>
+    <tr><td>Eating and payment</td><td>Part B: <code>finishEating(10)</code>; turn 11 <code>collectPayment</code> → <code>pay()</code> → <code>markPaid()</code>, table released, revenue</td></tr>
+    <tr><td>Result check</td><td>Part B, end: <code>result()</code> → <code>Objective.evaluate(scoreboard())</code> → <code>GameResult</code></td></tr>
+    <tr><td>Stage 2/3 behaviour</td><td><b>VIP pricing</b> (<code>billFor</code> −10%) <b>and Happy Hour</b> (<code>activate</code>, <code>refresh/recover</code>, <code>adjust</code> −20%)</td></tr>
+    <tr><td>Guards and loops</td><td><code>loop</code> over turns, waiting customers and recovery; <code>opt [game.canStartHappyHour()]</code>; <code>alt</code> serve succeeds or is rejected; <code>opt</code> Cashier</td></tr>
+  </table>
+  <div class="callout">
+    <b>The manager choice that changes the outcome</b>
+    On turn 7 the manager answers <code>y</code> to Happy Hour <em>before</em> the Waiter takes Chloe's order.
+    <code>PricingPolicy.quote</code> applies the VIP discount first and then Happy Hour, so the Pasta is locked at
+    <b>$18.00 × 0.9 × 0.8 = $12.96</b> instead of $16.20, and the waiting Critic recovers +15 on turns 7 and 8.
+    Over the whole run this choice costs $3.24 of revenue but lifts the final average satisfaction from
+    75.6 to <b>82.6</b> (§5).
+  </div>
+  <p>The diagram is split in two parts so it stays legible when printed: Part A covers turn 7 (arrival,
+    Happy Hour, seating, ordering, pricing, first unit of cooking, end-of-turn patience). Part B covers turns
+    8–11 and the final result. Both parts sit inside the same <code>loop</code> over turns. Messages use the
+    real method names from the code.</p>
+</section>
+
+<section class="wide-page">
+  <h2>3A · Turn 7: arrival, Happy Hour, seating, ordering, pricing</h2>
+  <p class="caption">Source: <code>docs/diagrams/sequence-1-arrival-order.mmd</code></p>
+  <div class="diagram seq">{{SEQ_1}}</div>
+</section>
+
+<section class="wide-page">
+  <h2>3B · Turns 8–11: READY, SERVED, eating, payment, and the result check</h2>
+  <p class="caption">Source: <code>docs/diagrams/sequence-2-service-payment.mmd</code></p>
+  <div class="diagram seq">{{SEQ_2}}</div>
+</section>
+
+<!-- =============================================================== 4 DESIGN -->
+<section>
+  <h2><span class="num">4</span>Design discussion</h2>
+  <h3>4.1 Key abstractions and their responsibilities</h3>
+  <table>
+    <tr><th style="width:26%">Abstraction</th><th style="width:11%">Layer</th><th>Responsibility (one reason to change)</th></tr>
+    <tr><td><code>Game</code></td><td><span class="pill ctl">control</span></td><td>Knows the order of the six steps and nothing else. Every rule it triggers lives in a domain or staff object.</td></tr>
+    <tr><td><code>GameConfig</code>, <code>ArrivalSchedule</code></td><td><span class="pill ctl">control</span></td><td>The base setting: turns, tables, menu, who arrives when (as constructor references), who is hired. Each stage's "registration" happens here.</td></tr>
+    <tr><td><code>Objective</code>, <code>Scoreboard</code>, <code>GameResult</code></td><td><span class="pill ctl">control</span></td><td>Targets, the end-of-turn numbers and the Victory/Defeat verdict with a line per target.</td></tr>
+    <tr><td><code>StaffMember</code> / <code>DirectedStaff</code></td><td><span class="pill staff">staff</span></td><td>Per-turn task budget; the template method that validates and carries out a manager instruction.</td></tr>
+    <tr><td><code>Waiter</code>, <code>Chef</code>, <code>Host</code></td><td><span class="pill staff">staff</span></td><td>The duties of one role and how to carry them out; which commands are currently useful (shown as hints).</td></tr>
+    <tr><td><code>Cashier</code></td><td><span class="pill staff">staff</span></td><td>Picks the oldest customer able to pay and takes one payment per turn.</td></tr>
+    <tr><td><code>PricingPolicy</code>, <code>PriceModifier</code>, <code>HappyHour</code></td><td><span class="pill pol">policy</span></td><td>Locks the bill when an order is taken; Happy Hour's once-per-game life cycle, discount and recovery.</td></tr>
+    <tr><td><code>Restaurant</code></td><td><span class="pill ent">model</span></td><td>Aggregate root: queue, tables, guests, orders, revenue; keeps them consistent.</td></tr>
+    <tr><td><code>Customer</code> + 3 subclasses</td><td><span class="pill ent">model</span></td><td>Visit life cycle and satisfaction (base); patience, food choice and bill (subclasses).</td></tr>
+    <tr><td><code>Order</code></td><td><span class="pill ent">model</span></td><td>Locked price, preparation progress, the READY → SERVED rule, cancellation.</td></tr>
+    <tr><td><code>MenuItem</code>, <code>Dish</code>, <code>ComboMeal</code>, <code>Menu</code></td><td><span class="pill ent">model</span></td><td>What can be ordered; a combo derives its price and units from its dishes.</td></tr>
+    <tr><td><code>Money</code>, <code>RuleViolation</code></td><td><span class="pill ent">model</span></td><td>Exact cents arithmetic; a player-readable reason why a move breaks a rule.</td></tr>
+    <tr><td><code>ConsoleUI</code>, <code>Dashboard</code>, <code>CommandParser</code>, <code>Terminal</code>, <code>Theme</code></td><td><span class="pill ui">boundary</span></td><td>Flow of prompts, drawing the state, the shape of commands, I/O and script echo, colours and ASCII fallback.</td></tr>
+  </table>
+
+  <h3>4.2 Design principles, where the code actually shows them</h3>
+  <div class="card nobreak" style="margin-bottom:3mm">
+    <h4>SRP · Single responsibility</h4>
+    <p>Each rule has exactly one home. "A dish finished this turn cannot be served until next turn" is checked
+      only in <code>Order.serve</code>; the Waiter just calls it, and the UI just shows the
+      <code>RuleViolation</code> message. <code>Dashboard</code> only reads the game and <code>CommandParser</code> only
+      checks the <em>shape</em> of input (<code>seat 2 1</code>), never whether the move is legal. When we
+      changed the end-of-turn layout we touched one class.</p>
+  </div>
+  <div class="card nobreak" style="margin-bottom:3mm">
+    <h4>OCP · Open for extension, closed for modification</h4>
+    <p>Stage 1 → 2 added VIP and Critic customers with <b>no change</b> to <code>Game</code>, <code>Waiter</code>,
+      <code>Chef</code>, <code>Cashier</code>, <code>Restaurant</code>, <code>Order</code> or <code>Customer</code>:
+      <code>git diff stage-1 stage-2 -- src/rush/control/Game.java src/rush/staff</code> is empty.
+      Stage 3's Host is a new <code>DirectedStaff</code> registered in <code>GameConfig.hireDirectedStaff()</code>;
+      the console's staff loop prompted it without any change to that loop. Combos needed no change to
+      <code>Order</code>, <code>Chef</code> or <code>Waiter</code>.</p>
+  </div>
+  <div class="card nobreak" style="margin-bottom:3mm">
+    <h4>LSP · Liskov substitution</h4>
+    <p>Subclasses cannot break the life cycle: the transitions (<code>seatAt</code>, <code>placeOrder</code>,
+      <code>pay</code>, <code>leave</code>) are implemented once in <code>Customer</code>, guarded by status checks, and
+      no subclass overrides them. Subclasses only vary the three behaviour hooks, and each override keeps the
+      base contract (a loss rate ≥ 0, an item from the given menu, a bill ≤ the menu price). The test <em>"all customer types follow the same order and service flow"</em> runs a
+      VIP through the exact sequence a Regular uses. A <code>ComboMeal</code> stands in for any
+      <code>MenuItem</code>: the Critic's "most elaborate item" comparator and <code>Chef</code>'s unit counting work
+      unchanged.</p>
+  </div>
+  <div class="card nobreak" style="margin-bottom:3mm">
+    <h4>ISP · Interface segregation</h4>
+    <p>The Cashier takes no instructions, so it is a <code>StaffMember</code> but not a <code>DirectedStaff</code>
+      and is not forced to implement <code>duties()</code>, <code>carryOut()</code> or <code>options()</code>.
+      <code>ConsoleUI</code> depends only on the narrow <code>DirectedStaff</code> API (<code>perform</code>,
+      <code>options</code>, <code>hasTaskLeft</code>). <code>PriceModifier</code> has a single method.</p>
+  </div>
+  <div class="card nobreak" style="margin-bottom:3mm">
+    <h4>DIP · Dependency inversion (partly)</h4>
+    <p><code>PricingPolicy</code> depends on the <code>PriceModifier</code> abstraction, not on
+      <code>HappyHour</code>. <code>ArrivalSchedule</code> depends on a <code>CustomerFactory</code> functional
+      interface, so it never names a concrete customer class. The console depends on
+      <code>DirectedStaff</code>, not on <code>Waiter</code>. <b>Honest limit:</b> <code>Game</code> still constructs
+      <code>HappyHour</code> and <code>PricingPolicy</code> itself. Injecting them through <code>GameConfig</code> would be the
+      next step if more policies appeared.</p>
+  </div>
+
+  <h3>4.3 Patterns we used (and why)</h3>
+  <table>
+    <tr><th style="width:20%">Pattern</th><th style="width:28%">Where</th><th>Why it earns its place</th></tr>
+    <tr><td>Template Method</td><td><code>DirectedStaff.perform</code></td><td>Budget check, duty check, "rejected moves are free", in one place for every role.</td></tr>
+    <tr><td>Composite</td><td><code>MenuItem</code> ← <code>Dish</code>, <code>ComboMeal</code></td><td>A combo is a menu item made of menu items; price and units are derived, never duplicated.</td></tr>
+    <tr><td>Strategy (pricing chain)</td><td><code>PricingPolicy</code> + <code>PriceModifier</code></td><td>Restaurant-wide pricing rules plug in after the customer's own discount, in a fixed order.</td></tr>
+    <tr><td>Command (light)</td><td><code>Command</code> record</td><td>Decouples "what the manager typed" from "who validates it"; scripts are just lists of commands.</td></tr>
+    <tr><td>Factory method references</td><td><code>ArrivalSchedule.at(4, "Ben", CriticCustomer::new)</code></td><td>Each stage registers its lineup without the schedule knowing customer classes.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h3 style="margin-top:0">4.4 Trade-offs</h3>
+  <table>
+    <tr><th style="width:28%">Decision</th><th style="width:36%">Benefit</th><th>Cost we accepted</th></tr>
+    <tr><td>Domain objects throw <code>RuleViolation</code> with a player-facing message</td><td>One source of truth per rule; the reason shown to the player is the rule itself; no duplicated "can I?" checks in the UI.</td><td>Exceptions on an expected path. Contained: only <code>DirectedStaff.perform</code> and <code>Game.startHappyHour</code> catch them.</td></tr>
+    <tr><td><code>Customer</code> abstract from Stage 1, but <code>MenuItem</code> concrete until Stage 3</td><td>Customer variation was certain and had to be polymorphic. Combos were the <em>only</em> reason for a second menu-item kind, so we extracted it when needed (YAGNI).</td><td>Stage 3 had to edit <code>MenuItem</code> and its construction in <code>GameConfig</code> (a 3-line change; callers untouched).</td></tr>
+    <tr><td>Events are short English strings built in <code>Game</code></td><td>Simple; the interface styles them by <code>GameEvent.Kind</code> without parsing.</td><td>Messages are not localisable. A structured event type per kind would be the alternative.</td></tr>
+    <tr><td>The dashboard colours customer types by name</td><td>Presentation stays out of the domain.</td><td>A small switch on <code>type()</code> exists in the UI (colour only; an unknown type still displays). There is no type switch anywhere in the rules.</td></tr>
+    <tr><td><code>TurnContext</code> passed to staff on every call</td><td>Staff hold no references to a particular game; easy to test in isolation.</td><td>One extra parameter on staff methods.</td></tr>
+    <tr><td>Staff with nothing useful to do wait automatically (Stage 3)</td><td>Fewer meaningless prompts once the Host was added (three roles per turn).</td><td>A UI behaviour change between stages, documented in §6.</td></tr>
+  </table>
+
+  <h3>4.5 An alternative design we considered: the State pattern for customers</h3>
+  <p>Customers move through <code>WAITING → SEATED → ORDERED → EATING → READY_TO_PAY → PAID</code> (or
+    <code>LEFT</code>). We sketched a State pattern: one class per state (<code>Waiting</code>, <code>Seated</code>, …),
+    each implementing <code>seat()</code>, <code>order()</code>, <code>serve()</code>, <code>endOfTurn()</code> and
+    rejecting what it does not allow.</p>
+  <div class="grid2">
+    <div class="callout green"><b>For</b> Every transition and its legality is in one place per state;
+      illegal moves fail by design.</div>
+    <div class="callout"><b>Against (why we chose the enum)</b> The life cycle is strictly linear, and the
+      <em>type</em> behaviours (loss rate, bill, food choice) cut across all states, which would mean seven
+      state classes times three customer types to reason about. An enum with guarded transition methods in
+      one abstract class is shorter, easy to test, and keeps the polymorphism where the brief asks for it:
+      in the customer types.</div>
+  </div>
+  <p class="small">Also rejected: a <code>CustomerType</code> enum with <code>switch</code> statements in the controller
+    (contradicts "dispatch through the customer objects"), and a Decorator chain for prices (the discount order
+    "VIP first, then Happy Hour" reads more clearly as an explicit list in <code>PricingPolicy</code>).</p>
+</section>
+
+<!-- =============================================================== 5 CHOICES -->
+<section>
+  <h2><span class="num">5</span>How the player's choices change the result</h2>
+  <p class="lede">The setting is deterministic, so any difference in outcome comes from the manager's decisions.
+    We replayed the real <code>Game</code> on the base setting with every fixed priority for the Waiter, the Chef cooking an order on the
+    turn it is taken or not, and, in Stage 3, using the Host or not and different Happy Hour turns.</p>
+
+  <h3>Stage 1</h3>
+  <table>
+    <tr><th>Waiter priority</th><th class="c">Chef cooks same turn</th><th class="c">Paid</th><th class="r">Revenue</th><th class="r">Avg sat.</th><th>Result</th></tr>
+    <tr><td>serve › order › seat</td><td class="c">yes</td><td class="c">5</td><td class="r">$66.00</td><td class="r">79.2</td><td class="win">Victory</td></tr>
+    <tr><td>serve › order › seat</td><td class="c">no</td><td class="c">4</td><td class="r">$51.00</td><td class="r">66.0</td><td class="win">Victory</td></tr>
+    <tr><td>seat › order › serve</td><td class="c">no</td><td class="c">4</td><td class="r">$51.00</td><td class="r">60.0</td><td class="win">Victory (just)</td></tr>
+    <tr><td>seat › serve › order</td><td class="c">no</td><td class="c">3</td><td class="r">$42.00</td><td class="r">60.0</td><td class="loss">Defeat</td></tr>
+  </table>
+  <h3>Stage 2 (Critic and VIP)</h3>
+  <table>
+    <tr><th>Waiter priority</th><th class="c">Chef cooks same turn</th><th class="c">Paid</th><th class="r">Revenue</th><th class="r">Avg sat.</th><th>Result</th></tr>
+    <tr><td>serve › order › seat</td><td class="c">yes</td><td class="c">5</td><td class="r">$67.20</td><td class="r">76.0</td><td class="win">Victory</td></tr>
+    <tr><td>seat › order › serve</td><td class="c">no</td><td class="c">4</td><td class="r">$52.20</td><td class="r">62.5</td><td class="win">Victory</td></tr>
+    <tr><td>seat › serve › order</td><td class="c">no</td><td class="c">3</td><td class="r">$43.20</td><td class="r">59.3</td><td class="loss">Defeat on all three</td></tr>
+  </table>
+  <h3>Stage 3 (Host, combos, Happy Hour)</h3>
+  <table>
+    <tr><th>Waiter priority</th><th class="c">Chef same turn</th><th class="c">Host</th><th class="c">Happy Hour</th><th class="c">Paid</th><th class="r">Revenue</th><th class="r">Avg</th><th>Result</th></tr>
+    <tr><td>order › serve › seat</td><td class="c">yes</td><td class="c">yes</td><td class="c">turn 7</td><td class="c">5</td><td class="r">$92.16</td><td class="r">82.6</td><td class="win">Victory</td></tr>
+    <tr><td>order › serve › seat</td><td class="c">yes</td><td class="c">yes</td><td class="c">never</td><td class="c">5</td><td class="r">$95.40</td><td class="r">75.6</td><td class="win">Victory</td></tr>
+    <tr><td>serve › order › seat</td><td class="c">yes</td><td class="c">yes</td><td class="c">turn 7</td><td class="c">4</td><td class="r">$67.86</td><td class="r">84.3</td><td class="win">Victory</td></tr>
+    <tr><td>seat › serve › order</td><td class="c">no</td><td class="c"><b>yes</b></td><td class="c">turn 7</td><td class="c">4</td><td class="r">$67.86</td><td class="r">81.0</td><td class="win">Victory</td></tr>
+    <tr><td>seat › serve › order</td><td class="c">no</td><td class="c"><b>no</b></td><td class="c">turn 7</td><td class="c">3</td><td class="r">$49.50</td><td class="r">68.7</td><td class="loss">Defeat</td></tr>
+    <tr><td>seat › serve › order</td><td class="c">no</td><td class="c">no</td><td class="c">turn 14</td><td class="c">3</td><td class="r">$49.50</td><td class="r">57.0</td><td class="loss">Defeat</td></tr>
+  </table>
+  <div class="grid3">
+    <div class="callout"><b>Serve before you seat</b> A served customer stops losing satisfaction and frees a
+      table two turns later. Seating first only moves the waiting from the queue to a table.</div>
+    <div class="callout blue"><b>The Host changes the best priority</b> With a Host doing the seating,
+      <em>take the order first</em> beats <em>serve first</em> (5 paid vs 4). Using the Host alone turns the
+      rookie strategy from Defeat into Victory.</div>
+    <div class="callout gold"><b>Happy Hour is a trade</b> Switched on at turn 7 it costs $3.24 of revenue but
+      lifts the average from 75.6 to 82.6. Switched on at turn 14 it reaches nobody who can still pay.</div>
+  </div>
+</section>
+
+<!-- =============================================================== 6 PROCESS -->
+<section>
+  <h2><span class="num">6</span>Development process</h2>
+  <p class="lede">Each stage is a tagged, runnable commit. Every tag compiles on its own, passes its own
+    rule checks and replays its own victory and defeat scripts (verified from clean <code>git archive</code>
+    checkouts of each tag).</p>
+  <h3>Commit history</h3>
+  <table>
+    <tr><th style="width:12%">Commit</th><th style="width:14%">Date</th><th>Message</th><th style="width:12%">Tag</th></tr>
+    {{GIT_LOG}}
+  </table>
+  <p class="small">Compare links: <span class="fill">https://github.com/[ORG]/restaurant-rush/compare/stage-1...stage-2</span> and
+    <span class="fill">…/compare/stage-2...stage-3</span>. Locally: <code>git diff stage-1 stage-2 --stat</code>.</p>
+
+  <h3>Stage 1 → Stage 2: customer behaviour</h3>
+  <table>
+    <tr><th style="width:30%">File</th><th style="width:12%">Change</th><th>Reason</th></tr>
+    <tr><td><code>model/VIPCustomer.java</code></td><td>new</td><td>Loss 5, <code>billFor</code> 10% off, own remark.</td></tr>
+    <tr><td><code>model/CriticCustomer.java</code></td><td>new</td><td>Loss 12; overrides <code>chooseFrom</code> (most elaborate dish) and gives a star review.</td></tr>
+    <tr><td><code>model/Money.java</code></td><td>+5 lines</td><td><code>percent(int)</code>, rounded half-up, needed for the first discount.</td></tr>
+    <tr><td><code>control/GameConfig.java</code></td><td>2 lines</td><td><b>Registration</b>: Ben (T4) becomes a Critic, Chloe (T7) a VIP. Still six arrivals.</td></tr>
+    <tr><td><code>ui/Dashboard.java</code></td><td>small</td><td>Colour per customer type, and a guest-type legend in the help screen (presentation only).</td></tr>
+    <tr><td><code>Main.java</code>, tests, scripts, docs</td><td>updated</td><td>Edition label; 4 new rule checks; Stage 2 scripts and notes.</td></tr>
+    <tr><td><code>Game</code>, <code>Customer</code>, all staff, <code>Restaurant</code>, <code>Order</code></td><td><b>unchanged</b></td><td>Behaviour is dispatched through the new subclasses (OCP).</td></tr>
+  </table>
+
+  <h3>Stage 2 → Stage 3: new role and menu policy</h3>
+  <table>
+    <tr><th style="width:30%">File</th><th style="width:12%">Change</th><th>Reason</th></tr>
+    <tr><td><code>staff/Host.java</code></td><td>new</td><td>A <code>DirectedStaff</code> whose only duty is <code>SEAT</code>; reuses the shared seating helper.</td></tr>
+    <tr><td><code>model/Dish.java</code>, <code>model/ComboMeal.java</code></td><td>new</td><td>The concrete dish moved into <code>Dish</code>; <code>ComboMeal</code> derives 90% price and summed units from two dishes.</td></tr>
+    <tr><td><code>model/MenuItem.java</code></td><td><b>rewritten</b></td><td>Concrete → abstract (<code>price()</code>, <code>prepUnits()</code>). Same public API, so <code>Order</code>, <code>Chef</code>, <code>Waiter</code> and the Critic's comparator did not change.</td></tr>
+    <tr><td><code>policy/PriceModifier.java</code>, <code>policy/HappyHour.java</code></td><td>new</td><td>Once per game, two turns, 20% off orders taken, +15 recovery at turn start for those still waiting.</td></tr>
+    <tr><td><code>policy/PricingPolicy.java</code></td><td>changed</td><td>Now applies a list of <code>PriceModifier</code>s after <code>billFor</code> (VIP first, then Happy Hour).</td></tr>
+    <tr><td><code>model/Customer.java</code></td><td>+14 lines</td><td><code>recover(points)</code>, capped at 100, only for customers still awaiting service.</td></tr>
+    <tr><td><code>control/Game.java</code></td><td>changed</td><td>Owns <code>HappyHour</code>; <code>startHappyHour()</code> only before any staff acts; recovery in <code>beginTurn()</code>.</td></tr>
+    <tr><td><code>control/GameConfig.java</code></td><td>small</td><td><b>Registration</b>: menu built from <code>Dish</code>es plus two combos; Host hired first.</td></tr>
+    <tr><td><code>control/GameEvent.java</code></td><td>1 line</td><td><code>POLICY</code> event kind for Happy Hour recovery.</td></tr>
+    <tr><td><code>ui/ConsoleUI.java</code>, <code>ui/Dashboard.java</code></td><td>changed</td><td>Happy Hour prompt and status line (remaining duration); auto-wait for staff with nothing useful to do.</td></tr>
+    <tr><td><code>Waiter</code>, <code>Chef</code>, <code>Cashier</code>, <code>DirectedStaff</code>, <code>Restaurant</code>, <code>Order</code></td><td><b>unchanged</b></td><td>Combos and the Host fit the existing abstractions.</td></tr>
+  </table>
+  <div class="callout blue"><b>Earlier behaviour still works</b> Stage 1's worked example (Pasta from arrival to
+    payment, satisfaction 92 → 84 → 76, paid $18.00 on turn 6), abandonment, cashier order and "READY then
+    SERVED next turn" are still checked by the Stage 3 test suite on custom settings, and all pass.</div>
+</section>
+
+<!-- =============================================================== 7 EVIDENCE -->
+<section>
+  <h2><span class="num">7</span>Functional evidence</h2>
+  <p class="lede">Every screen below is real output, captured by replaying the scripts at their own tag
+    (<code>docs/report/build.py</code>). Full plain-text transcripts are in <code>docs/transcripts/</code>.</p>
+
+  <h3>7.1 Launch, dashboard and robust input (Stage 1, turn 1)</h3>
+  <p>The start-of-turn display shows the turn, revenue against target, paid count, average satisfaction
+    (<code>N/A</code> before anyone pays), the queue, both tables, each customer's satisfaction bar, the kitchen,
+    and the tasks each member of staff can do right now. Two bad inputs are explained and do not use up the
+    Waiter's task.</p>
+  {{TERM_LAUNCH}}
+</section>
+
+<section class="ev">
+  <h3>7.2 READY → SERVED, and a constrained decision (Stage 1, turns 9–10)</h3>
+  <p>Turn 9: <code>serve 3</code> is rejected because the Pasta is 1/2 cooked; the Chef finishes it, but the Waiter
+    has already acted. Turn 10: Dev arrives just as the Pasta is READY. With one Waiter, the manager serves Chloe
+    and leaves Dev in the queue for a turn.</p>
+  {{TERM_READY_SERVED}}
+  {{TERM_TRADEOFF}}
+</section>
+
+<section class="ev">
+  <h3>7.3 Payment, victory and defeat (Stage 1)</h3>
+  <p>Chloe was served on turn 10, finished eating on turn 11 and pays on turn 12, freeing table 1.</p>
+  {{TERM_PAYMENT}}
+  {{TERM_S1_VICTORY}}
+  {{TERM_S1_DEFEAT}}
+  <p>Victory script: serve › order › seat, the Chef cooks immediately → 5 paid, $66.00, average 79.2.
+    Defeat script: seat › serve › order, the Chef never cooks on the turn an order is taken → 3 paid, $42.00.</p>
+</section>
+
+<section class="ev">
+  <h3>7.4 VIP and Critic behaviour (Stage 2)</h3>
+  <p>The Critic (#2 Ben) ordered Pasta although the rotation would give guest #2 a Burger, and lost 12 per
+    turn while it cooked. On turn 7 the VIP arrives. The manager serves the Critic, because the VIP loses only
+    5 per turn. On turn 9 the Critic pays and posts a review; on turn 13 the VIP pays <b>$16.20</b>.</p>
+  {{TERM_CRITIC}}
+  {{TERM_REVIEW}}
+</section>
+
+<section class="ev">
+  <h3>7.5 Stage 3 features: Host, combos and Happy Hour</h3>
+  <p>Turn 7: Happy Hour is switched on before anyone acts, the Host seats the VIP, the Waiter takes the
+    order in the same turn ($18.00 × 0.9 × 0.8 = <b>$12.96</b>), and the Critic, waiting for the 3-unit
+    <b>Salad + Pasta Combo ($24.30)</b>, recovers +15. Turn 8: the header shows <b>1 turn left</b> and both
+    waiting guests recover again.</p>
+  {{TERM_HAPPY}}
+  {{TERM_HAPPY2}}
+</section>
+
+<section class="ev">
+  <h3>7.6 Victory and defeat (Stage 3)</h3>
+  {{TERM_S3_VICTORY}}
+  {{TERM_S3_DEFEAT}}
+  <p>The defeat script ignores the Host and switches Happy Hour on at turn 14, too late to help anyone who can
+    still pay: 3 paid, average 57.0.</p>
+</section>
+
+<section class="ev">
+  <h3>7.7 Automated rule checks, run at each tag</h3>
+  <p><code>./test.sh</code> compiles <code>src</code> and <code>test</code> with plain <code>javac</code> (no JUnit download
+    needed) and checks the rules against the real objects, including the brief's worked example and the
+    pricing examples. The scripted runs are replayed through the real console.</p>
+  <h4>stage-1</h4>{{TESTS_1}}
+  <h4>stage-2</h4>{{TESTS_2}}
+  <h4>stage-3</h4>{{TESTS_3}}
+</section>
+
+<!-- =============================================================== 8 INTERPRETATIONS -->
+<section>
+  <h2><span class="num">8</span>Rule interpretations we documented</h2>
+  <table>
+    <tr><th style="width:27%">Topic</th><th>What the game does</th></tr>
+    <tr><td>Food choice (all stages)</td><td>Deterministic rotation: guest #n orders item n on the menu board, wrapping around. Shown when the order is taken.</td></tr>
+    <tr><td>Critic's special behaviour</td><td>Order preference: always the item with the most preparation units, the dearer one on a tie (Pasta in Stage 2, Salad + Pasta Combo in Stage 3). Cosmetic 1–5 star review on payment (no effect on scoring).</td></tr>
+    <tr><td>Combo choice rule</td><td>Combos follow the dishes on the board, so the rotation gives guests #4 and #5 the two combos.</td></tr>
+    <tr><td>Combos on the menu</td><td>Salad + Burger ($21.60, 2 units), Salad + Pasta ($24.30, 3 units).</td></tr>
+    <tr><td>Display order</td><td>The scheduled arrival (step 1) is processed, then the start-of-turn dashboard is drawn, so the manager sees the new customer before choosing.</td></tr>
+    <tr><td>Host and Waiter order</td><td>Host, then Waiter, then Chef. The Waiter may take the order of a customer the Host seated this turn (consistent with the Chef working on an order the Waiter took this turn).</td></tr>
+    <tr><td>Happy Hour start</td><td>Offered at the start of each turn until used, before any staff member acts. Recovery is applied immediately on the first turn and at the start of the second.</td></tr>
+    <tr><td>"Waiting for a table or food"</td><td><code>WAITING</code>, <code>SEATED</code> (not yet ordered) and <code>ORDERED</code> (including a READY but unserved dish). The same set loses satisfaction at turn end.</td></tr>
+    <tr><td>Rounding</td><td>Half-up to the nearest cent after each percentage step: VIP Burger in Happy Hour $15.00 → $13.50 → $10.80.</td></tr>
+    <tr><td>Seating</td><td><code>seat 2</code> uses the first free table; <code>seat 2 1</code> names one.</td></tr>
+    <tr><td>Auto-wait (Stage 3)</td><td>A staff member whose only possible action is <code>wait</code> waits without a prompt.</td></tr>
+    <tr><td>Satisfaction display</td><td>A paid customer's satisfaction is frozen when they pay, so the average equals the values recorded at payment.</td></tr>
+  </table>
+</section>
+
+<!-- =============================================================== 9 REFLECTION -->
+<section>
+  <h2><span class="num">9</span>Reflection</h2>
+  <h3>What worked</h3>
+  <ul>
+    <li><b>Designing from the published brief.</b> Because all three stages were known up front, Stage 1 already
+      separated the customer <em>life cycle</em> from customer <em>behaviour</em>. Stage 2 then touched only
+      configuration, one value-object helper and presentation.</li>
+    <li><b>Rules as exceptions with reasons.</b> Putting each rule in the object that owns the data
+      (<code>Order.serve</code>, <code>Table.assign</code>, <code>HappyHour.activate</code>) gave us clear error
+      messages for free and kept the UI free of rules.</li>
+    <li><b>Scripts as tests.</b> Recording runs as plain command files made every victory and defeat
+      reproducible for the TA, the video and the automated checks alike.</li>
+  </ul>
+  <h3>What we would do differently</h3>
+  <ul>
+    <li>Inject <code>PricingPolicy</code> and its modifiers through <code>GameConfig</code> instead of building them in
+      <code>Game</code>, so a new policy needs only registration.</li>
+    <li>Use structured event objects instead of English strings, which would let tests assert on events rather
+      than text.</li>
+    <li>Write the strategy-replay tool (§5) as part of the test suite earlier: it found a balance issue (the
+      Host changes the best Waiter priority) that we only noticed late.</li>
+  </ul>
+  <h3>Individual contributions</h3>
+  <table>
+    <tr><th style="width:24%">Member</th><th>Main contributions</th><th style="width:22%">Video segment</th></tr>
+    <tr><td><span class="fill">[Member 1]</span></td><td><span class="fill">[e.g. domain model, Money, Order rules]</span></td><td><span class="fill">[1, 3]</span></td></tr>
+    <tr><td><span class="fill">[Member 2]</span></td><td><span class="fill">[e.g. staff roles, turn controller]</span></td><td><span class="fill">[2]</span></td></tr>
+    <tr><td><span class="fill">[Member 3]</span></td><td><span class="fill">[e.g. VIP and Critic, tests]</span></td><td><span class="fill">[4]</span></td></tr>
+    <tr><td><span class="fill">[Member 4]</span></td><td><span class="fill">[e.g. Host, combos, Happy Hour]</span></td><td><span class="fill">[5, 6]</span></td></tr>
+    <tr><td><span class="fill">[Member 5]</span></td><td><span class="fill">[e.g. UML, report, README]</span></td><td><span class="fill">[7]</span></td></tr>
+  </table>
+  <h3>Personal reflections</h3>
+  <p><span class="fill">[Each member: two or three sentences on what you learned about OO design, for example how the
+    Stage 2 change confirmed or challenged your Stage 1 design.]</span></p>
+</section>
+
+</body>
+</html>

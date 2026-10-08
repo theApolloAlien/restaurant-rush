@@ -7,3 +7,5 @@ out-test/
 *.iml
 .vscode/
 sources.txt
+docs/report/build/
+__pycache__/

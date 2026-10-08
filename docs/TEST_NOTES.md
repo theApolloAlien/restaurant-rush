@@ -97,7 +97,7 @@ were replaced, so there are still six.
 
 Strategy: serve › order › seat, Chef cooks immediately.
 
-* Turns 4–7: the Critic's Pasta needs two Chef turns while he loses 12 per turn
+* Turns 4–7: the Critic's Pasta needs two Chef turns while the Critic loses 12 per turn
   (100 → 88 → 76 → 64).
 * **Turn 7 (constrained choice):** Chloe the VIP arrives just as the Critic's Pasta
   is READY. The single Waiter serves the Critic and leaves the VIP queuing, because
@@ -139,7 +139,7 @@ Same arrivals as Stage 2. New in this stage:
 
 Strategy: take orders › serve › seat, Host seats every arrival, Happy Hour on turn 7.
 
-* Turn 1: the Host seats Ada, the Waiter takes her order and the Chef finishes the
+* Turn 1: the Host seats Ada, the Waiter takes the order and the Chef finishes the
   Salad in the **same turn**, which was impossible before the Host existed.
 * Turn 4: the Critic orders the **Salad + Pasta Combo ($24.30, 3 units)**.
 * **Turn 7 (constrained choice):** the Critic's combo is READY, but the manager
