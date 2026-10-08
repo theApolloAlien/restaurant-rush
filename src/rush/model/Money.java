@@ -34,6 +34,11 @@ public final class Money implements Comparable<Money> {
         return new Money(cents + other.cents);
     }
 
+    /** {@code percent}% of this amount, rounded half-up to the nearest cent. */
+    public Money percent(int percent) {
+        return new Money((cents * percent + 50) / 100);
+    }
+
     public boolean isAtLeast(Money other) {
         return cents >= other.cents;
     }

@@ -69,6 +69,11 @@ public final class Dashboard {
                 "The Waiter acts before the Chef, so a dish finished this turn is served next turn.",
                 "A served customer eats for one turn, then the Cashier collects one bill per turn.");
         term.println();
+        section("GUESTS");
+        guestType(t.gray("Regular"), "loses 8 per waiting turn", "pays full price");
+        guestType(t.gold("VIP"), "loses 5 per waiting turn", "10% off the bill");
+        guestType(t.purple("Critic"), "loses 12 per waiting turn", "always orders the most elaborate dish");
+        term.println();
         section("COMMANDS");
         commandHelp("seat <customer> [table]", "Waiter: seat a queued customer (default: first free table)");
         commandHelp("order <customer>", "Waiter: take a seated customer's order (they choose the food)");
@@ -92,7 +97,8 @@ public final class Dashboard {
                     + t.pips(item.prepUnits(), item.prepUnits()) + " " + t.gray(units(item.prepUnits())));
         }
         term.println("     " + t.gray("Customers choose their own food: guest #n orders item n on the board,"));
-        term.println("     " + t.gray("wrapping around (Salad, Burger, Pasta, Salad, ...)."));
+        term.println("     " + t.gray("wrapping around (Salad, Burger, Pasta, Salad, ...). A Critic always"));
+        term.println("     " + t.gray("orders the most elaborate dish (most preparation units)."));
         term.println();
     }
 
@@ -342,8 +348,13 @@ public final class Dashboard {
         return t.gray("#" + c.id()) + " " + t.bold(c.name());
     }
 
+    /** Customer types get their own colour; unknown types fall back to grey. */
     private String typeTag(Customer c) {
-        return t.gray(c.type());
+        return switch (c.type()) {
+            case "VIP" -> t.gold(c.type());
+            case "Critic" -> t.purple(c.type());
+            default -> t.gray(c.type());
+        };
     }
 
     private String status(Customer c) {
@@ -406,6 +417,10 @@ public final class Dashboard {
         for (String line : lines) {
             term.println("     " + line);
         }
+    }
+
+    private void guestType(String type, String patience, String bill) {
+        term.println("     " + Theme.padRight(type, 10) + Theme.padRight(patience, 28) + t.gray(bill));
     }
 
     private void commandHelp(String usage, String meaning) {

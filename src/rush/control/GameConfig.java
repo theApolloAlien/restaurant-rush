@@ -2,10 +2,12 @@ package rush.control;
 
 import java.util.List;
 
+import rush.model.CriticCustomer;
 import rush.model.Menu;
 import rush.model.MenuItem;
 import rush.model.Money;
 import rush.model.RegularCustomer;
+import rush.model.VIPCustomer;
 import rush.staff.Cashier;
 import rush.staff.Chef;
 import rush.staff.DirectedStaff;
@@ -36,7 +38,8 @@ public final class GameConfig {
 
     /**
      * 18 turns, 2 tables, one Waiter, Chef and Cashier, one customer at the
-     * start of turns 1, 4, 7, 10, 13 and 16.
+     * start of turns 1, 4, 7, 10, 13 and 16. Two of the six are a Critic and a
+     * VIP; the rest are Regulars.
      */
     public static GameConfig base() {
         Menu menu = new Menu(List.of(
@@ -45,8 +48,8 @@ public final class GameConfig {
                 new MenuItem("Pasta", Money.dollars(18), 2)));
         ArrivalSchedule arrivals = new ArrivalSchedule()
                 .at(1, "Ada", RegularCustomer::new)
-                .at(4, "Ben", RegularCustomer::new)
-                .at(7, "Chloe", RegularCustomer::new)
+                .at(4, "Ben", CriticCustomer::new)
+                .at(7, "Chloe", VIPCustomer::new)
                 .at(10, "Dev", RegularCustomer::new)
                 .at(13, "Elif", RegularCustomer::new)
                 .at(16, "Farid", RegularCustomer::new);

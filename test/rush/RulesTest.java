@@ -6,6 +6,7 @@ import static rush.TestKit.equal;
 import static rush.TestKit.ok;
 import static rush.TestKit.rejected;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import rush.control.ArrivalSchedule;
@@ -18,7 +19,9 @@ import rush.model.Menu;
 import rush.model.MenuItem;
 import rush.model.Money;
 import rush.model.OrderStatus;
+import rush.model.CriticCustomer;
 import rush.model.RegularCustomer;
+import rush.model.VIPCustomer;
 import rush.staff.Command;
 
 /**
@@ -46,6 +49,10 @@ public final class RulesTest {
         kit.test("served, eating and paying customers lose no satisfaction", RulesTest::noLossAfterServing);
         kit.test("customers choose their own food by rotating through the menu", RulesTest::foodChoice);
         kit.test("the game always runs all 18 turns", RulesTest::alwaysEighteenTurns);
+        kit.test("VIP: loses 5 per turn and gets 10% off", RulesTest::vipBehaviour);
+        kit.test("Critic: loses 12 per turn and orders the most elaborate dish", RulesTest::criticBehaviour);
+        kit.test("base setting has six arrivals including a VIP and a Critic", RulesTest::stageTwoArrivals);
+        kit.test("all customer types follow the same order and service flow", RulesTest::sameFlowForAllTypes);
         kit.test("scripted victory run ends in Victory", RulesTest::scriptedVictory);
         kit.test("scripted defeat run ends in Defeat", RulesTest::scriptedDefeat);
 
@@ -184,7 +191,9 @@ public final class RulesTest {
     }
 
     private static void abandonment() {
-        Game game = baseGame();
+        GameConfig config = new GameConfig("Ada alone", 18, 2, GameConfig.base().menu(),
+                new ArrivalSchedule().at(1, "Ada", RegularCustomer::new), Objective.base());
+        Game game = new Game(config);
         game.beginTurn();
         ok(game, "Waiter", Command.seat(1, 1));
         game.endTurn();
@@ -235,6 +244,66 @@ public final class RulesTest {
         }
     }
 
+    private static void vipBehaviour() {
+        Customer vip = new VIPCustomer(1, "Vera", 1);
+        equal(5, vip.satisfactionLossPerTurn(), "loss per turn");
+        equal(Money.ofCents(1350), vip.billFor(Money.dollars(15)), "Burger with 10% off");
+        equal(Money.ofCents(1620), vip.billFor(Money.dollars(18)), "Pasta with 10% off");
+        equal(Money.ofCents(810), vip.billFor(Money.dollars(9)), "Salad with 10% off");
+        vip.loseSatisfaction();
+        equal(95, vip.satisfaction(), "after one waiting turn");
+    }
+
+    private static void criticBehaviour() {
+        Game game = baseGame();
+        Customer critic = new CriticCustomer(2, "Ben", 4);   // rotation alone would give a Burger
+        equal(12, critic.satisfactionLossPerTurn(), "loss per turn");
+        equal("Pasta", critic.chooseFrom(game.restaurant().menu()).name(), "most elaborate dish");
+        equal(Money.dollars(18), critic.billFor(Money.dollars(18)), "full price");
+        for (int i = 0; i < 9; i++) {
+            critic.loseSatisfaction();
+        }
+        equal(0, critic.satisfaction(), "floor at 0 (100 - 9 x 12 < 0)");
+    }
+
+    private static void stageTwoArrivals() {
+        List<String> types = new ArrayList<>();
+        Game game = baseGame();
+        while (!game.isOver()) {
+            game.beginTurn();
+            game.endTurn();
+        }
+        game.restaurant().guests().forEach(c -> types.add(c.type()));
+        equal(6, types.size(), "six arrivals");
+        check(types.contains("VIP") && types.contains("Critic"), "VIP and Critic present: " + types);
+    }
+
+    /** A VIP goes through exactly the same seat, order, cook, serve, eat, pay steps; only the bill differs. */
+    private static void sameFlowForAllTypes() {
+        Menu burgers = new Menu(List.of(new MenuItem("Burger", Money.dollars(15), 1)));
+        GameConfig config = new GameConfig("VIP only", 18, 2, burgers,
+                new ArrivalSchedule().at(1, "Vera", VIPCustomer::new), Objective.base());
+        Game game = new Game(config);
+        game.beginTurn();
+        ok(game, "Waiter", Command.seat(1, 1));
+        game.endTurn();
+        game.beginTurn();
+        ok(game, "Waiter", Command.takeOrder(1));
+        ok(game, "Chef", Command.cook(1));
+        game.endTurn();
+        game.beginTurn();
+        ok(game, "Waiter", Command.serve(1));
+        game.endTurn();
+        game.beginTurn();
+        game.endTurn();
+        game.beginTurn();
+        game.endTurn();
+        Customer vera = game.restaurant().customer(1);
+        equal(CustomerStatus.PAID, vera.status(), "paid on turn 5");
+        equal(90, vera.satisfaction(), "two waiting turns at -5");
+        equal(Money.ofCents(1350), game.restaurant().revenue(), "discounted bill");
+    }
+
     private static void alwaysEighteenTurns() {
         Game game = baseGame();
         int turns = 0;
@@ -249,13 +318,13 @@ public final class RulesTest {
     }
 
     private static void scriptedVictory() {
-        String transcript = TestKit.playScript("scripts/stage1-victory.txt");
+        String transcript = TestKit.playScript("scripts/stage2-victory.txt");
         check(transcript.contains("V I C T O R Y"), "victory banner");
-        check(transcript.contains("Revenue $66.00"), "revenue $66.00");
+        check(transcript.contains("Revenue $67.20"), "revenue $67.20");
     }
 
     private static void scriptedDefeat() {
-        String transcript = TestKit.playScript("scripts/stage1-defeat.txt");
+        String transcript = TestKit.playScript("scripts/stage2-defeat.txt");
         check(transcript.contains("D E F E A T"), "defeat banner");
     }
 }

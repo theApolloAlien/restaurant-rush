@@ -25,7 +25,7 @@ import rush.ui.Theme;
 public final class Main {
 
     /** Which stage of the assignment this build is. */
-    public static final String EDITION = "Stage 1 · Basic operation";
+    public static final String EDITION = "Stage 2 · Customer behaviour";
 
     private Main() {
     }
