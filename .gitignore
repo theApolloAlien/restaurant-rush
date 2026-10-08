@@ -1,0 +1,9 @@
+out/
+out-test/
+*.jar
+*.class
+.DS_Store
+.idea/
+*.iml
+.vscode/
+sources.txt
