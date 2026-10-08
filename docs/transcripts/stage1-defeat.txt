@@ -1,0 +1,723 @@
+
+   R E S T A U R A N T   R U S H
+   a turn-based restaurant management game - Stage 1 - Basic operation
+
+   1  Play the base setting
+   2  How to play
+   3  Quit
+
+  > 1
+
+  +--------------------------------------------------------------------------+
+  | TURN 1 of 18   =.................              Stage 1 - Basic operation |
+  +--------------------------------------------------------------------------+
+  | Revenue $0.00/$45.00   Paid 0/4   Avg satisfaction N/A/60   Left 0       |
+  +--------------------------------------------------------------------------+
+
+    > #1 Ada (Regular) arrives and joins the queue with satisfaction 100.
+
+  WAITING QUEUE --------------------------------------------------------------
+     #1 Ada    Regular  ########## 100  Waiting for a table since turn 1
+
+  TABLES ---------------------------------------------------------------------
+   T1  free
+   T2  free
+
+  KITCHEN --------------------------------------------------------------------
+     no orders yet
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Waiter Wendy      seat 1 1  -  wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * WAITER WENDY  seat, order, serve, wait
+    try seat 1 1  -  wait
+  waiter > seat 1 1
+    + Wendy seats #1 Ada at table 1.
+
+  * CHEF CARLO  cook, wait
+    try wait
+  chef > wait
+    + Chef Carlo waits this turn.
+
+  ---- End of turn 1 ---------------------------------------------------------
+    v #1 Ada seated, ready to order: satisfaction 100 -> 92 (-8)
+
+  Served 0 - Unhappy departures 0 - Revenue $0.00 - Avg sat. N/A - Turns 1/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 2 of 18   ==................              Stage 1 - Basic operation |
+  +--------------------------------------------------------------------------+
+  | Revenue $0.00/$45.00   Paid 0/4   Avg satisfaction N/A/60   Left 0       |
+  +--------------------------------------------------------------------------+
+
+  WAITING QUEUE --------------------------------------------------------------
+     nobody waiting
+
+  TABLES ---------------------------------------------------------------------
+   T1  #1 Ada    Regular  #########.  92  Seated, ready to order
+   T2  free
+
+  KITCHEN --------------------------------------------------------------------
+     no orders yet
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Waiter Wendy      order 1  -  wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * WAITER WENDY  seat, order, serve, wait
+    try order 1  -  wait
+  waiter > order 1
+    + Wendy takes #1 Ada's order: Salad ($9.00).
+
+  * CHEF CARLO  cook, wait
+    try cook 1  -  wait
+  chef > wait
+    + Chef Carlo waits this turn.
+
+  ---- End of turn 2 ---------------------------------------------------------
+    v #1 Ada waiting for salad: satisfaction 92 -> 84 (-8)
+
+  Served 0 - Unhappy departures 0 - Revenue $0.00 - Avg sat. N/A - Turns 2/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 3 of 18   ===...............              Stage 1 - Basic operation |
+  +--------------------------------------------------------------------------+
+  | Revenue $0.00/$45.00   Paid 0/4   Avg satisfaction N/A/60   Left 0       |
+  +--------------------------------------------------------------------------+
+
+  WAITING QUEUE --------------------------------------------------------------
+     nobody waiting
+
+  TABLES ---------------------------------------------------------------------
+   T1  #1 Ada    Regular  ########..  84  Waiting for Salad
+   T2  free
+
+  KITCHEN --------------------------------------------------------------------
+     #1 Ada    Salad                     $9.00   .    0/1  In preparation
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Waiter Wendy      wait
+     Chef Carlo        cook 1  -  wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * WAITER WENDY  seat, order, serve, wait
+    try wait
+  waiter > wait
+    + Waiter Wendy waits this turn.
+
+  * CHEF CARLO  cook, wait
+    try cook 1  -  wait
+  chef > cook 1
+    + Carlo finishes #1 Ada's Salad (1/1). It is READY.
+
+  ---- End of turn 3 ---------------------------------------------------------
+    v #1 Ada waiting for salad: satisfaction 84 -> 76 (-8)
+
+  Served 0 - Unhappy departures 0 - Revenue $0.00 - Avg sat. N/A - Turns 3/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 4 of 18   ====..............              Stage 1 - Basic operation |
+  +--------------------------------------------------------------------------+
+  | Revenue $0.00/$45.00   Paid 0/4   Avg satisfaction N/A/60   Left 0       |
+  +--------------------------------------------------------------------------+
+
+    > #2 Ben (Regular) arrives and joins the queue with satisfaction 100.
+
+  WAITING QUEUE --------------------------------------------------------------
+     #2 Ben    Regular  ########## 100  Waiting for a table since turn 4
+
+  TABLES ---------------------------------------------------------------------
+   T1  #1 Ada    Regular  ########..  76  Waiting for Salad
+   T2  free
+
+  KITCHEN --------------------------------------------------------------------
+     #1 Ada    Salad                     $9.00   #    1/1  READY
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Waiter Wendy      serve 1  -  seat 2 2  -  wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * WAITER WENDY  seat, order, serve, wait
+    try serve 1  -  seat 2 2  -  wait
+  waiter > seat 2 2
+    + Wendy seats #2 Ben at table 2.
+
+  * CHEF CARLO  cook, wait
+    try wait
+  chef > wait
+    + Chef Carlo waits this turn.
+
+  ---- End of turn 4 ---------------------------------------------------------
+    v #1 Ada waiting for salad: satisfaction 76 -> 68 (-8)
+    v #2 Ben seated, ready to order: satisfaction 100 -> 92 (-8)
+
+  Served 0 - Unhappy departures 0 - Revenue $0.00 - Avg sat. N/A - Turns 4/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 5 of 18   =====.............              Stage 1 - Basic operation |
+  +--------------------------------------------------------------------------+
+  | Revenue $0.00/$45.00   Paid 0/4   Avg satisfaction N/A/60   Left 0       |
+  +--------------------------------------------------------------------------+
+
+  WAITING QUEUE --------------------------------------------------------------
+     nobody waiting
+
+  TABLES ---------------------------------------------------------------------
+   T1  #1 Ada    Regular  #######...  68  Waiting for Salad
+   T2  #2 Ben    Regular  #########.  92  Seated, ready to order
+
+  KITCHEN --------------------------------------------------------------------
+     #1 Ada    Salad                     $9.00   #    1/1  READY
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Waiter Wendy      serve 1  -  order 2  -  wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * WAITER WENDY  seat, order, serve, wait
+    try serve 1  -  order 2  -  wait
+  waiter > serve 1
+    + Wendy serves #1 Ada's Salad. Enjoy!
+
+  * CHEF CARLO  cook, wait
+    try wait
+  chef > wait
+    + Chef Carlo waits this turn.
+
+  ---- End of turn 5 ---------------------------------------------------------
+    v #2 Ben seated, ready to order: satisfaction 92 -> 84 (-8)
+
+  Served 1 - Unhappy departures 0 - Revenue $0.00 - Avg sat. N/A - Turns 5/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 6 of 18   ======............              Stage 1 - Basic operation |
+  +--------------------------------------------------------------------------+
+  | Revenue $0.00/$45.00   Paid 0/4   Avg satisfaction N/A/60   Left 0       |
+  +--------------------------------------------------------------------------+
+
+  WAITING QUEUE --------------------------------------------------------------
+     nobody waiting
+
+  TABLES ---------------------------------------------------------------------
+   T1  #1 Ada    Regular  #######...  68  Eating
+   T2  #2 Ben    Regular  ########..  84  Seated, ready to order
+
+  KITCHEN --------------------------------------------------------------------
+     #1 Ada    Salad                     $9.00   #    1/1  SERVED
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Waiter Wendy      order 2  -  wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * WAITER WENDY  seat, order, serve, wait
+    try order 2  -  wait
+  waiter > order 2
+    + Wendy takes #2 Ben's order: Burger ($15.00).
+
+  * CHEF CARLO  cook, wait
+    try cook 2  -  wait
+  chef > wait
+    + Chef Carlo waits this turn.
+
+  ---- End of turn 6 ---------------------------------------------------------
+    + #1 Ada finishes eating and is ready to pay.
+    v #2 Ben waiting for burger: satisfaction 84 -> 76 (-8)
+
+  Served 1 - Unhappy departures 0 - Revenue $0.00 - Avg sat. N/A - Turns 6/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 7 of 18   =======...........              Stage 1 - Basic operation |
+  +--------------------------------------------------------------------------+
+  | Revenue $0.00/$45.00   Paid 0/4   Avg satisfaction N/A/60   Left 0       |
+  +--------------------------------------------------------------------------+
+
+    > #3 Chloe (Regular) arrives and joins the queue with satisfaction 100.
+
+  WAITING QUEUE --------------------------------------------------------------
+     #3 Chloe  Regular  ########## 100  Waiting for a table since turn 7
+
+  TABLES ---------------------------------------------------------------------
+   T1  #1 Ada    Regular  #######...  68  Ready to pay
+   T2  #2 Ben    Regular  ########..  76  Waiting for Burger
+
+  KITCHEN --------------------------------------------------------------------
+     #1 Ada    Salad                     $9.00   #    1/1  SERVED
+     #2 Ben    Burger                   $15.00   .    0/1  In preparation
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Waiter Wendy      wait
+     Chef Carlo        cook 2  -  wait
+     Cashier Cassie    automatic - will charge #1 Ada at turn end
+
+  * WAITER WENDY  seat, order, serve, wait
+    try wait
+  waiter > wait
+    + Waiter Wendy waits this turn.
+
+  * CHEF CARLO  cook, wait
+    try cook 2  -  wait
+  chef > cook 2
+    + Carlo finishes #2 Ben's Burger (1/1). It is READY.
+
+  ---- End of turn 7 ---------------------------------------------------------
+    $ Cassie collects $9.00 from #1 Ada (satisfaction 68 recorded). Table 1 is
+      free. "Not bad at all."
+    v #2 Ben waiting for burger: satisfaction 76 -> 68 (-8)
+    v #3 Chloe waiting for a table: satisfaction 100 -> 92 (-8)
+
+  Served 1 - Unhappy departures 0 - Revenue $9.00 - Avg sat. 68.0 - Turns 7/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 8 of 18   ========..........              Stage 1 - Basic operation |
+  +--------------------------------------------------------------------------+
+  | Revenue $9.00/$45.00   Paid 1/4   Avg satisfaction 68.0/60   Left 0      |
+  +--------------------------------------------------------------------------+
+
+  WAITING QUEUE --------------------------------------------------------------
+     #3 Chloe  Regular  #########.  92  Waiting for a table since turn 7
+
+  TABLES ---------------------------------------------------------------------
+   T1  free
+   T2  #2 Ben    Regular  #######...  68  Waiting for Burger
+
+  KITCHEN --------------------------------------------------------------------
+     #2 Ben    Burger                   $15.00   #    1/1  READY
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Waiter Wendy      serve 2  -  seat 3 1  -  wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * WAITER WENDY  seat, order, serve, wait
+    try serve 2  -  seat 3 1  -  wait
+  waiter > seat 3 1
+    + Wendy seats #3 Chloe at table 1.
+
+  * CHEF CARLO  cook, wait
+    try wait
+  chef > wait
+    + Chef Carlo waits this turn.
+
+  ---- End of turn 8 ---------------------------------------------------------
+    v #2 Ben waiting for burger: satisfaction 68 -> 60 (-8)
+    v #3 Chloe seated, ready to order: satisfaction 92 -> 84 (-8)
+
+  Served 1 - Unhappy departures 0 - Revenue $9.00 - Avg sat. 68.0 - Turns 8/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 9 of 18   =========.........              Stage 1 - Basic operation |
+  +--------------------------------------------------------------------------+
+  | Revenue $9.00/$45.00   Paid 1/4   Avg satisfaction 68.0/60   Left 0      |
+  +--------------------------------------------------------------------------+
+
+  WAITING QUEUE --------------------------------------------------------------
+     nobody waiting
+
+  TABLES ---------------------------------------------------------------------
+   T1  #3 Chloe  Regular  ########..  84  Seated, ready to order
+   T2  #2 Ben    Regular  ######....  60  Waiting for Burger
+
+  KITCHEN --------------------------------------------------------------------
+     #2 Ben    Burger                   $15.00   #    1/1  READY
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Waiter Wendy      serve 2  -  order 3  -  wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * WAITER WENDY  seat, order, serve, wait
+    try serve 2  -  order 3  -  wait
+  waiter > serve 2
+    + Wendy serves #2 Ben's Burger. Enjoy!
+
+  * CHEF CARLO  cook, wait
+    try wait
+  chef > wait
+    + Chef Carlo waits this turn.
+
+  ---- End of turn 9 ---------------------------------------------------------
+    v #3 Chloe seated, ready to order: satisfaction 84 -> 76 (-8)
+
+  Served 2 - Unhappy departures 0 - Revenue $9.00 - Avg sat. 68.0 - Turns 9/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 10 of 18   ==========........             Stage 1 - Basic operation |
+  +--------------------------------------------------------------------------+
+  | Revenue $9.00/$45.00   Paid 1/4   Avg satisfaction 68.0/60   Left 0      |
+  +--------------------------------------------------------------------------+
+
+    > #4 Dev (Regular) arrives and joins the queue with satisfaction 100.
+
+  WAITING QUEUE --------------------------------------------------------------
+     #4 Dev    Regular  ########## 100  Waiting for a table since turn 10
+
+  TABLES ---------------------------------------------------------------------
+   T1  #3 Chloe  Regular  ########..  76  Seated, ready to order
+   T2  #2 Ben    Regular  ######....  60  Eating
+
+  KITCHEN --------------------------------------------------------------------
+     #2 Ben    Burger                   $15.00   #    1/1  SERVED
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Waiter Wendy      order 3  -  wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * WAITER WENDY  seat, order, serve, wait
+    try order 3  -  wait
+  waiter > order 3
+    + Wendy takes #3 Chloe's order: Pasta ($18.00).
+
+  * CHEF CARLO  cook, wait
+    try cook 3  -  wait
+  chef > wait
+    + Chef Carlo waits this turn.
+
+  ---- End of turn 10 --------------------------------------------------------
+    + #2 Ben finishes eating and is ready to pay.
+    v #3 Chloe waiting for pasta: satisfaction 76 -> 68 (-8)
+    v #4 Dev waiting for a table: satisfaction 100 -> 92 (-8)
+
+  Served 2 - Unhappy departures 0 - Revenue $9.00 - Avg sat. 68.0 - Turns 10/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 11 of 18   ===========.......             Stage 1 - Basic operation |
+  +--------------------------------------------------------------------------+
+  | Revenue $9.00/$45.00   Paid 1/4   Avg satisfaction 68.0/60   Left 0      |
+  +--------------------------------------------------------------------------+
+
+  WAITING QUEUE --------------------------------------------------------------
+     #4 Dev    Regular  #########.  92  Waiting for a table since turn 10
+
+  TABLES ---------------------------------------------------------------------
+   T1  #3 Chloe  Regular  #######...  68  Waiting for Pasta
+   T2  #2 Ben    Regular  ######....  60  Ready to pay
+
+  KITCHEN --------------------------------------------------------------------
+     #2 Ben    Burger                   $15.00   #    1/1  SERVED
+     #3 Chloe  Pasta                    $18.00   ..   0/2  In preparation
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Waiter Wendy      wait
+     Chef Carlo        cook 3  -  wait
+     Cashier Cassie    automatic - will charge #2 Ben at turn end
+
+  * WAITER WENDY  seat, order, serve, wait
+    try wait
+  waiter > wait
+    + Waiter Wendy waits this turn.
+
+  * CHEF CARLO  cook, wait
+    try cook 3  -  wait
+  chef > cook 3
+    + Carlo works on #3 Chloe's Pasta (1/2).
+
+  ---- End of turn 11 --------------------------------------------------------
+    $ Cassie collects $15.00 from #2 Ben (satisfaction 60 recorded). Table 2
+      is free. "Not bad at all."
+    v #3 Chloe waiting for pasta: satisfaction 68 -> 60 (-8)
+    v #4 Dev waiting for a table: satisfaction 92 -> 84 (-8)
+
+  Served 2 - Unhappy departures 0 - Revenue $24.00 - Avg sat. 64.0 - Turns 11/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 12 of 18   ============......             Stage 1 - Basic operation |
+  +--------------------------------------------------------------------------+
+  | Revenue $24.00/$45.00   Paid 2/4   Avg satisfaction 64.0/60   Left 0     |
+  +--------------------------------------------------------------------------+
+
+  WAITING QUEUE --------------------------------------------------------------
+     #4 Dev    Regular  ########..  84  Waiting for a table since turn 10
+
+  TABLES ---------------------------------------------------------------------
+   T1  #3 Chloe  Regular  ######....  60  Waiting for Pasta
+   T2  free
+
+  KITCHEN --------------------------------------------------------------------
+     #3 Chloe  Pasta                    $18.00   #.   1/2  In preparation
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Waiter Wendy      seat 4 2  -  wait
+     Chef Carlo        cook 3  -  wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * WAITER WENDY  seat, order, serve, wait
+    try seat 4 2  -  wait
+  waiter > seat 4 2
+    + Wendy seats #4 Dev at table 2.
+
+  * CHEF CARLO  cook, wait
+    try cook 3  -  wait
+  chef > cook 3
+    + Carlo finishes #3 Chloe's Pasta (2/2). It is READY.
+
+  ---- End of turn 12 --------------------------------------------------------
+    v #3 Chloe waiting for pasta: satisfaction 60 -> 52 (-8)
+    v #4 Dev seated, ready to order: satisfaction 84 -> 76 (-8)
+
+  Served 2 - Unhappy departures 0 - Revenue $24.00 - Avg sat. 64.0 - Turns 12/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 13 of 18   =============.....             Stage 1 - Basic operation |
+  +--------------------------------------------------------------------------+
+  | Revenue $24.00/$45.00   Paid 2/4   Avg satisfaction 64.0/60   Left 0     |
+  +--------------------------------------------------------------------------+
+
+    > #5 Elif (Regular) arrives and joins the queue with satisfaction 100.
+
+  WAITING QUEUE --------------------------------------------------------------
+     #5 Elif   Regular  ########## 100  Waiting for a table since turn 13
+
+  TABLES ---------------------------------------------------------------------
+   T1  #3 Chloe  Regular  #####.....  52  Waiting for Pasta
+   T2  #4 Dev    Regular  ########..  76  Seated, ready to order
+
+  KITCHEN --------------------------------------------------------------------
+     #3 Chloe  Pasta                    $18.00   ##   2/2  READY
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Waiter Wendy      serve 3  -  order 4  -  wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * WAITER WENDY  seat, order, serve, wait
+    try serve 3  -  order 4  -  wait
+  waiter > serve 3
+    + Wendy serves #3 Chloe's Pasta. Enjoy!
+
+  * CHEF CARLO  cook, wait
+    try wait
+  chef > wait
+    + Chef Carlo waits this turn.
+
+  ---- End of turn 13 --------------------------------------------------------
+    v #4 Dev seated, ready to order: satisfaction 76 -> 68 (-8)
+    v #5 Elif waiting for a table: satisfaction 100 -> 92 (-8)
+
+  Served 3 - Unhappy departures 0 - Revenue $24.00 - Avg sat. 64.0 - Turns 13/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 14 of 18   ==============....             Stage 1 - Basic operation |
+  +--------------------------------------------------------------------------+
+  | Revenue $24.00/$45.00   Paid 2/4   Avg satisfaction 64.0/60   Left 0     |
+  +--------------------------------------------------------------------------+
+
+  WAITING QUEUE --------------------------------------------------------------
+     #5 Elif   Regular  #########.  92  Waiting for a table since turn 13
+
+  TABLES ---------------------------------------------------------------------
+   T1  #3 Chloe  Regular  #####.....  52  Eating
+   T2  #4 Dev    Regular  #######...  68  Seated, ready to order
+
+  KITCHEN --------------------------------------------------------------------
+     #3 Chloe  Pasta                    $18.00   ##   2/2  SERVED
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Waiter Wendy      order 4  -  wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * WAITER WENDY  seat, order, serve, wait
+    try order 4  -  wait
+  waiter > order 4
+    + Wendy takes #4 Dev's order: Salad ($9.00).
+
+  * CHEF CARLO  cook, wait
+    try cook 4  -  wait
+  chef > wait
+    + Chef Carlo waits this turn.
+
+  ---- End of turn 14 --------------------------------------------------------
+    + #3 Chloe finishes eating and is ready to pay.
+    v #4 Dev waiting for salad: satisfaction 68 -> 60 (-8)
+    v #5 Elif waiting for a table: satisfaction 92 -> 84 (-8)
+
+  Served 3 - Unhappy departures 0 - Revenue $24.00 - Avg sat. 64.0 - Turns 14/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 15 of 18   ===============...             Stage 1 - Basic operation |
+  +--------------------------------------------------------------------------+
+  | Revenue $24.00/$45.00   Paid 2/4   Avg satisfaction 64.0/60   Left 0     |
+  +--------------------------------------------------------------------------+
+
+  WAITING QUEUE --------------------------------------------------------------
+     #5 Elif   Regular  ########..  84  Waiting for a table since turn 13
+
+  TABLES ---------------------------------------------------------------------
+   T1  #3 Chloe  Regular  #####.....  52  Ready to pay
+   T2  #4 Dev    Regular  ######....  60  Waiting for Salad
+
+  KITCHEN --------------------------------------------------------------------
+     #3 Chloe  Pasta                    $18.00   ##   2/2  SERVED
+     #4 Dev    Salad                     $9.00   .    0/1  In preparation
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Waiter Wendy      wait
+     Chef Carlo        cook 4  -  wait
+     Cashier Cassie    automatic - will charge #3 Chloe at turn end
+
+  * WAITER WENDY  seat, order, serve, wait
+    try wait
+  waiter > wait
+    + Waiter Wendy waits this turn.
+
+  * CHEF CARLO  cook, wait
+    try cook 4  -  wait
+  chef > cook 4
+    + Carlo finishes #4 Dev's Salad (1/1). It is READY.
+
+  ---- End of turn 15 --------------------------------------------------------
+    $ Cassie collects $18.00 from #3 Chloe (satisfaction 52 recorded). Table 1
+      is free. "That took a while..."
+    v #4 Dev waiting for salad: satisfaction 60 -> 52 (-8)
+    v #5 Elif waiting for a table: satisfaction 84 -> 76 (-8)
+
+  Served 3 - Unhappy departures 0 - Revenue $42.00 - Avg sat. 60.0 - Turns 15/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 16 of 18   ================..             Stage 1 - Basic operation |
+  +--------------------------------------------------------------------------+
+  | Revenue $42.00/$45.00   Paid 3/4   Avg satisfaction 60.0/60   Left 0     |
+  +--------------------------------------------------------------------------+
+
+    > #6 Farid (Regular) arrives and joins the queue with satisfaction 100.
+
+  WAITING QUEUE --------------------------------------------------------------
+     #5 Elif   Regular  ########..  76  Waiting for a table since turn 13
+     #6 Farid  Regular  ########## 100  Waiting for a table since turn 16
+
+  TABLES ---------------------------------------------------------------------
+   T1  free
+   T2  #4 Dev    Regular  #####.....  52  Waiting for Salad
+
+  KITCHEN --------------------------------------------------------------------
+     #4 Dev    Salad                     $9.00   #    1/1  READY
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Waiter Wendy      serve 4  -  seat 5 1  -  seat 6 1  -  wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * WAITER WENDY  seat, order, serve, wait
+    try serve 4  -  seat 5 1  -  seat 6 1  -  wait
+  waiter > seat 5 1
+    + Wendy seats #5 Elif at table 1.
+
+  * CHEF CARLO  cook, wait
+    try wait
+  chef > wait
+    + Chef Carlo waits this turn.
+
+  ---- End of turn 16 --------------------------------------------------------
+    v #4 Dev waiting for salad: satisfaction 52 -> 44 (-8)
+    v #5 Elif seated, ready to order: satisfaction 76 -> 68 (-8)
+    v #6 Farid waiting for a table: satisfaction 100 -> 92 (-8)
+
+  Served 3 - Unhappy departures 0 - Revenue $42.00 - Avg sat. 60.0 - Turns 16/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 17 of 18   =================.             Stage 1 - Basic operation |
+  +--------------------------------------------------------------------------+
+  | Revenue $42.00/$45.00   Paid 3/4   Avg satisfaction 60.0/60   Left 0     |
+  +--------------------------------------------------------------------------+
+
+  WAITING QUEUE --------------------------------------------------------------
+     #6 Farid  Regular  #########.  92  Waiting for a table since turn 16
+
+  TABLES ---------------------------------------------------------------------
+   T1  #5 Elif   Regular  #######...  68  Seated, ready to order
+   T2  #4 Dev    Regular  ####......  44  Waiting for Salad
+
+  KITCHEN --------------------------------------------------------------------
+     #4 Dev    Salad                     $9.00   #    1/1  READY
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Waiter Wendy      serve 4  -  order 5  -  wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * WAITER WENDY  seat, order, serve, wait
+    try serve 4  -  order 5  -  wait
+  waiter > serve 4
+    + Wendy serves #4 Dev's Salad. Enjoy!
+
+  * CHEF CARLO  cook, wait
+    try wait
+  chef > wait
+    + Chef Carlo waits this turn.
+
+  ---- End of turn 17 --------------------------------------------------------
+    v #5 Elif seated, ready to order: satisfaction 68 -> 60 (-8)
+    v #6 Farid waiting for a table: satisfaction 92 -> 84 (-8)
+
+  Served 4 - Unhappy departures 0 - Revenue $42.00 - Avg sat. 60.0 - Turns 17/18
+
+  +--------------------------------------------------------------------------+
+  | TURN 18 of 18   ==================             Stage 1 - Basic operation |
+  +--------------------------------------------------------------------------+
+  | Revenue $42.00/$45.00   Paid 3/4   Avg satisfaction 60.0/60   Left 0     |
+  +--------------------------------------------------------------------------+
+
+  WAITING QUEUE --------------------------------------------------------------
+     #6 Farid  Regular  ########..  84  Waiting for a table since turn 16
+
+  TABLES ---------------------------------------------------------------------
+   T1  #5 Elif   Regular  ######....  60  Seated, ready to order
+   T2  #4 Dev    Regular  ####......  44  Eating
+
+  KITCHEN --------------------------------------------------------------------
+     #4 Dev    Salad                     $9.00   #    1/1  SERVED
+
+  STAFF TASKS AVAILABLE ------------------------------------------------------
+     Waiter Wendy      order 5  -  wait
+     Chef Carlo        wait
+     Cashier Cassie    automatic - nobody is ready to pay yet
+
+  * WAITER WENDY  seat, order, serve, wait
+    try order 5  -  wait
+  waiter > order 5
+    + Wendy takes #5 Elif's order: Burger ($15.00).
+
+  * CHEF CARLO  cook, wait
+    try cook 5  -  wait
+  chef > wait
+    + Chef Carlo waits this turn.
+
+  ---- End of turn 18 --------------------------------------------------------
+    + #4 Dev finishes eating and is ready to pay.
+    v #5 Elif waiting for burger: satisfaction 60 -> 52 (-8)
+    v #6 Farid waiting for a table: satisfaction 84 -> 76 (-8)
+
+  Served 4 - Unhappy departures 0 - Revenue $42.00 - Avg sat. 60.0 - Turns 18/18
+
+
+     D E F E A T
+     The restaurant fell short of its targets this time.
+
+  TARGETS --------------------------------------------------------------------
+     x  Paid customers                   3   at least 4
+     x  Revenue                     $42.00   at least $45.00
+     +  Average satisfaction          60.0   at least 60
+
+  GUESTS ---------------------------------------------------------------------
+     Guest       Type      Ordered                Bill  Sat.   Outcome
+     #1 Ada      Regular   Salad                 $9.00    68   Paid
+     #2 Ben      Regular   Burger               $15.00    60   Paid
+     #3 Chloe    Regular   Pasta                $18.00    52   Paid
+     #4 Dev      Regular   Salad                 $9.00    44   Ready to pay
+     #5 Elif     Regular   Burger               $15.00    52   Waiting for Burger
+     #6 Farid    Regular   -                         -    76   Waiting for a table
+
+  Served 4 - Unhappy departures 0 - Revenue $42.00 - Avg sat. 60.0 - Turns 18/18
+
+   1  Play the base setting
+   2  How to play
+   3  Quit
+
+  > 3
+  Thanks for playing. The kitchen is closed.
