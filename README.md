@@ -7,10 +7,12 @@ Staff time is scarce, so the real decision is always *who comes first*.
 
 | | |
 |---|---|
-| **Repository** | `https://github.com/[ORG]/restaurant-rush` ← *replace with your URL* |
-| **Group** | `[LAB GROUP] · Group [N]` ← *fill in* |
-| **Report** | [`docs/report/Restaurant-Rush-Report.pdf`](docs/report/Restaurant-Rush-Report.pdf) |
-| **Video** | `[link or file name]`, timestamps [below](#video-timestamps) |
+| **Repository** | https://github.com/theApolloAlien/restaurant-rush |
+| **Group** | SCMA · Group 3 |
+| **Members** | CCDS LEE SHENG KAI · CCDS LEONG XUAN HAO · CCDS POLOYAPOY RON JOSHUA ABES (Apollo) · CCDS VICTORIA HAUGAA |
+| **Report** | [`docs/report/Restaurant-Rush-Report.pdf`](docs/report/Restaurant-Rush-Report.pdf) (editable: [`.docx`](docs/report/Restaurant-Rush-Report.docx)) |
+| **Video** | `[add the video link or file name here]`, timestamps [below](#video-timestamps) |
+| **Submission** | [`submission-folder/`](submission-folder/) holds everything for `SCMA_Grp3.zip` |
 
 ```
    ╦═╗┌─┐┌─┐┌┬┐┌─┐┬ ┬┬─┐┌─┐┌┐┌┌┬┐  ╦═╗┬ ┬┌─┐┬ ┬
@@ -39,13 +41,17 @@ javac --release 17 -d out $(find src -name '*.java')
 java -cp out rush.Main
 ```
 
-To play an earlier stage, check out its tag and run it in the same way:
+To play an earlier stage, check out its tag and **rebuild** before running. `run.sh` reuses an existing
+`restaurant-rush.jar`, which git does not track, so without `./build.sh` you would still be running the
+previous stage.
 
 ```bash
 git checkout stage-1
-./run.sh --script scripts/stage1-victory.txt
-git checkout main
+./build.sh && ./run.sh --script scripts/stage1-victory.txt
+git checkout main && ./build.sh
 ```
+
+On Windows no extra step is needed, because `run.bat` recompiles the sources every time.
 
 ## How to play
 
@@ -92,6 +98,9 @@ Sequence diagram (a VIP order during Happy Hour, from arrival to payment):
 [part A](docs/diagrams/sequence-1-arrival-order.svg) ·
 [part B](docs/diagrams/sequence-2-service-payment.svg) (sources in `docs/diagrams/*.mmd`).
 
+Editable draw.io versions of all three diagrams are in `docs/diagrams/*.drawio`. Open them in
+[diagrams.net](https://app.diagrams.net), the draw.io desktop app, or the VS Code draw.io extension.
+
 ## Stages and change analysis
 
 | Tag | Adds | Rule checks |
@@ -105,7 +114,7 @@ scripts.
 
 ### Stage 1 → Stage 2
 
-Compare: `https://github.com/[ORG]/restaurant-rush/compare/stage-1...stage-2`
+Compare: https://github.com/theApolloAlien/restaurant-rush/compare/stage-1...stage-2
 (locally: `git diff stage-1 stage-2 --stat`), commit `a721c2d`.
 
 | File | Change | Why |
@@ -121,7 +130,7 @@ Compare: `https://github.com/[ORG]/restaurant-rush/compare/stage-1...stage-2`
 
 ### Stage 2 → Stage 3
 
-Compare: `https://github.com/[ORG]/restaurant-rush/compare/stage-2...stage-3`
+Compare: https://github.com/theApolloAlien/restaurant-rush/compare/stage-2...stage-3
 (locally: `git diff stage-2 stage-3 --stat`), commit `13d6dc5`.
 
 | File | Change | Why |
@@ -156,17 +165,19 @@ transcripts are in [`docs/transcripts/`](docs/transcripts/).
 
 ## Video timestamps
 
-Fill these in after recording (script: [`docs/VIDEO_SCRIPT.md`](docs/VIDEO_SCRIPT.md)).
+Planned start times from the script
+([`submission-folder/editable/video-script/VIDEO_SCRIPT.md`](submission-folder/editable/video-script/VIDEO_SCRIPT.md)).
+Replace them with the real times after editing the video.
 
 | # | Segment | Presenter | Start |
 |:-:|---|---|---|
-| 1 | The game launching from the submitted project | `[name]` | `00:00` |
-| 2 | Meaningful manager choices, including a constrained decision | `[name]` | `[mm:ss]` |
-| 3 | A dish going READY → SERVED → payment | `[name]` | `[mm:ss]` |
-| 4 | VIP and Critic behaviour | `[name]` | `[mm:ss]` |
-| 5 | Stage 3 features: Host, combo, Happy Hour | `[name]` | `[mm:ss]` |
-| 6 | One victory and one defeat | `[name]` | `[mm:ss]` |
-| 7 | Stage tag comparisons and the diagrams | `[name]` | `[mm:ss]` |
+| 1 | The game launching from the submitted project | CCDS POLOYAPOY RON JOSHUA ABES (Apollo) | 00:00 |
+| 2 | Meaningful manager choices, including a constrained decision | CCDS POLOYAPOY RON JOSHUA ABES (Apollo) | 02:00 |
+| 3 | A dish going READY → SERVED → payment | CCDS LEONG XUAN HAO | 04:00 |
+| 4 | VIP and Critic behaviour | CCDS LEONG XUAN HAO | 06:00 |
+| 5 | Stage 3 features: Host, combo, Happy Hour | CCDS VICTORIA HAUGAA | 08:00 |
+| 6 | One victory and one defeat | CCDS VICTORIA HAUGAA | 10:30 |
+| 7 | Stage tag comparisons and the diagrams | CCDS LEE SHENG KAI | 12:00 |
 
 ## Repository layout
 
@@ -174,23 +185,27 @@ Fill these in after recording (script: [`docs/VIDEO_SCRIPT.md`](docs/VIDEO_SCRIP
 src/rush/            game source (ui, control, staff, policy, model)
 test/rush/           rule checks (plain Java, run with ./test.sh)
 scripts/             recorded manager inputs for each stage's victory and defeat runs
-docs/report/         report source (HTML + CSS), build script, and the PDF
-docs/diagrams/       class diagram generator and SVG, sequence diagram sources and SVGs
+docs/report/         report source (HTML + CSS), build scripts, the PDF and the editable .docx
+docs/diagrams/       class diagram generator, sequence diagram sources, SVGs and editable .drawio files
 docs/transcripts/    plain-text transcripts of every scripted run
 docs/TEST_NOTES.md   turn-by-turn notes for the reproducible runs
-docs/VIDEO_SCRIPT.md plan for the 15-minute video
+submission-folder/   the zip contents (SCMA_Grp3/), editable files, video script, prepare script
 ```
 
-To rebuild the report (needs Google Chrome; Mermaid is fetched from a CDN):
+To rebuild the report (needs Google Chrome; Mermaid is fetched from a CDN; the Word version also needs
+pandoc and the Python packages `python-docx` and `Pillow`):
 
 ```bash
-python3 docs/report/build.py
+python3 docs/report/build.py                 # PDF, .docx and .drawio files
+python3 submission-folder/prepare_submission.py   # refresh submission-folder/ and build SCMA_Grp3.zip
 ```
 
 ## Submission checklist
 
-- [ ] Replace `[ORG]`, `[LAB GROUP]`, `[N]` and the member names in this README and in `docs/report/report.html`, then rebuild the PDF
-- [ ] Push the branch **and the tags**: `git push -u origin main --tags`
-- [ ] Record the video, then fill in the timestamps above
+- [x] Repository URL, group and members filled in (README and report)
+- [x] Branch and tags pushed: `git push -u origin main --tags`
+- [ ] Record the video (script in `submission-folder/editable/video-script/`), then put the real start times above
+- [ ] Put the video file, or a link that stays available to graders, in `submission-folder/SCMA_Grp3/video/`
 - [ ] Each member signs the Declaration of Original Work and the Declaration on Use of GAI Assistance
-- [ ] Zip the source, README, PDF report, video (or link) and declarations as `LABGroup_AssignmentGrp.zip`
+  (course forms) and puts them in `submission-folder/SCMA_Grp3/declarations/`
+- [ ] Run `python3 submission-folder/prepare_submission.py` and upload `SCMA_Grp3.zip`

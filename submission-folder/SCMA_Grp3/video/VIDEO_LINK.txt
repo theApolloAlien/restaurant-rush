@@ -1,0 +1,8 @@
+Restaurant Rush: group video (SCMA Group 3)
+
+If the video file is small enough, put it in this folder (for example restaurant-rush-video.mp4).
+Otherwise paste a download link below. The link must stay available to graders.
+
+Link: [paste the video link here]
+
+Segment timestamps are listed in README.md under "Video timestamps".

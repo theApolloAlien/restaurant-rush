@@ -9,3 +9,10 @@ out-test/
 sources.txt
 docs/report/build/
 __pycache__/
+
+# submission: zips are built locally; signed forms and large video files stay out of the public repo
+submission-folder/*.zip
+submission-folder/SCMA_Grp3/declarations/*
+!submission-folder/SCMA_Grp3/declarations/README.txt
+submission-folder/SCMA_Grp3/video/*
+!submission-folder/SCMA_Grp3/video/VIDEO_LINK.txt

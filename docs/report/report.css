@@ -19,7 +19,7 @@
   size: A4;
   margin: 18mm 17mm 18mm 17mm;
   @bottom-right { content: counter(page); font: 9pt var(--sans); color: #9ca3af; }
-  @bottom-left { content: "Restaurant Rush · SC2002 group assignment"; font: 9pt var(--sans); color: #9ca3af; }
+  @bottom-left { content: "Restaurant Rush · SCMA Group 3"; font: 9pt var(--sans); color: #9ca3af; }
 }
 @page cover { size: A4; margin: 0; @bottom-right { content: none; } @bottom-left { content: none; } }
 @page wide {
@@ -41,41 +41,23 @@ body {
   page: cover;
   height: 297mm;
   width: 210mm;
-  position: relative;
-  overflow: hidden;
-  background: radial-gradient(120% 80% at 85% 10%, #ffd9c4 0%, #fff1e8 38%, #ffffff 70%);
+  padding: 38mm 24mm 0;
   break-after: page;
+  border-top: 9mm solid var(--accent);
 }
-.cover .band {
-  position: absolute; left: 0; right: 0; bottom: 0; height: 92mm;
-  background: linear-gradient(135deg, #2b2f3a 0%, #1d2028 100%);
-}
-.cover .inner { position: absolute; left: 22mm; right: 22mm; top: 30mm; }
-.cover .kicker { font: 600 10pt var(--sans); letter-spacing: .22em; text-transform: uppercase; color: var(--accent); }
-.cover h1 {
-  font: 700 52pt/1.0 var(--serif); margin: 8mm 0 4mm; letter-spacing: -.01em; color: #1b1e25;
-}
-.cover h1 span { color: var(--accent); }
-.cover .sub { font: 400 15pt/1.4 var(--sans); color: #4b5563; max-width: 140mm; }
-.cover .plate {
-  margin-top: 16mm; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5mm; max-width: 166mm;
-}
-.cover .plate div {
-  background: #ffffffcc; border: 1px solid #f3d3c2; border-radius: 4mm; padding: 4mm 5mm;
-}
-.cover .plate b { display: block; font: 700 18pt var(--serif); color: var(--accent); }
-.cover .plate small { color: var(--muted); font-size: 8.5pt; text-transform: uppercase; letter-spacing: .08em; }
-.cover .meta {
-  position: absolute; left: 22mm; right: 22mm; bottom: 22mm; color: #e5e7eb; font-size: 10pt;
-  display: grid; grid-template-columns: 1fr 1fr; gap: 3mm 12mm;
-}
-.cover .meta dt { color: #f0a483; font-size: 8pt; letter-spacing: .14em; text-transform: uppercase; }
-.cover .meta dd { margin: 0 0 2mm; }
+.cover .course { font: 500 11.5pt/1.5 var(--sans); color: #4b5563; margin: 0 0 18mm; }
+.cover h1 { font: 700 46pt/1.05 var(--serif); margin: 0 0 5mm; color: #1b1e25; }
+.cover .sub { font: 400 14pt/1.45 var(--sans); color: #374151; max-width: 150mm; margin: 0 0 12mm; }
 .cover .term-art {
-  position: absolute; right: 22mm; bottom: 100mm; font: 9pt/1.25 var(--mono); color: #c8603a; opacity: .9;
-  white-space: pre;
+  display: inline-block; font: 8.6pt/1.25 var(--mono); color: #f0a483; background: #1e2129;
+  padding: 4mm 6mm; border-radius: 2mm; white-space: pre; margin-bottom: 20mm;
 }
-.fill { background: #fff3c4; padding: 0 1.5mm; border-radius: 1mm; color: #7a5b00; }
+.cover-table { width: 100%; font-size: 10.5pt; border-top: 1.5px solid #d1d5db; }
+.cover-table th {
+  width: 32mm; background: none; border-bottom: 1px solid var(--rule); color: var(--muted);
+  font-weight: 600; padding: 2.4mm 2mm 2.4mm 0; vertical-align: top;
+}
+.cover-table td { padding: 2.4mm 0; line-height: 1.6; }
 
 /* ------------------------------------------------------------ headings */
 h2 {
@@ -182,3 +164,9 @@ ul.tests li.fail b { background: #fee2e2; color: #991b1b; }
 .pagebreak { break-before: page; }
 section.ev { break-before: page; }
 section.ev h3:first-child { margin-top: 0; }
+
+h3.first { margin-top: 0; }
+pre.cmd {
+  font: 7.3pt/1.6 var(--mono); margin: 0 0 2mm; background: #f9fafb; padding: 2.5mm; border-radius: 1.5mm;
+  white-space: pre;
+}

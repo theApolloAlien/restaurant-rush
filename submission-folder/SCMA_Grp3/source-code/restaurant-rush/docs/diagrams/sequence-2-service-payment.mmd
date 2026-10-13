@@ -1,0 +1,81 @@
+sequenceDiagram
+    autonumber
+    actor M as Manager
+    participant UI as :ConsoleUI
+    participant G as :Game
+    participant HH as :HappyHour
+    participant W as waiter:Waiter
+    participant C as chef:Chef
+    participant K as cashier:Cashier
+    participant R as :Restaurant
+    participant V as chloe:VIPCustomer
+    participant O as :Order
+    participant OB as :Objective
+
+    Note over M,OB: Part B. Turns 8 to 11: the Pasta becomes READY, is SERVED, Chloe eats and pays. Then the result check after turn 18.
+
+    loop for turn = 1 to 18, until game.isOver()
+        rect rgb(239, 250, 241)
+        Note over M,OB: Turn 8 (Happy Hour, 1 turn left)
+        UI->>G: beginTurn()
+        G->>HH: refresh(restaurant, 8)
+        HH->>V: recover(15)
+        Note over V: 95 to 100
+        M->>UI: "cook 3"
+        UI->>G: direct(chef, cmd)
+        G->>C: perform(cmd, ctx)
+        C->>O: prepareUnit(8)
+        O->>O: status = READY, readyTurn = 8
+        Note over W,O: The Waiter acted before the Chef, so the dish is served next turn at the earliest
+        end
+
+        rect rgb(238, 244, 255)
+        Note over M,OB: Turn 9
+        M->>UI: "serve 3"
+        UI->>G: direct(waiter, cmd)
+        G->>+W: perform(cmd, ctx)
+        W->>+O: serve(9)
+        alt [status == READY, readyTurn < turn]
+            O->>V: startEating(9)
+            O-->>W: status = SERVED
+            W-->>G: ActionResult.done (task used)
+        else [still cooking / became READY this turn]
+            O-->>-W: throws RuleViolation
+            W-->>-G: ActionResult.rejected (task not used)
+            G-->>UI: reason shown, manager chooses again
+        end
+        end
+
+        rect rgb(255, 249, 230)
+        Note over M,OB: Turn 10 endTurn() step 4: eating
+        UI->>+G: endTurn()
+        G->>V: finishEating(10)
+        Note over V: EATING to READY_TO_PAY
+        G->>K: collectPayment(ctx)
+        K-->>G: none (Chloe became ready this turn)
+        G-->>-UI: events
+        end
+
+        rect rgb(255, 244, 236)
+        Note over M,OB: Turn 11 endTurn() step 4: payment
+        UI->>+G: endTurn()
+        G->>+K: collectPayment(ctx)
+        K->>V: canPayOn(11)
+        V-->>K: true
+        opt [oldest customer able to pay, task unused]
+            K->>R: collectPayment(chloe)
+            R->>V: pay()
+            V->>O: markPaid()
+            V->>R: release table 1
+            R->>R: revenue += $12.96
+        end
+        K-->>-G: Payment(chloe, $12.96)
+        G-->>-UI: events and scoreboard
+        end
+    end
+
+    UI->>+G: result()
+    G->>+OB: evaluate(scoreboard())
+    OB-->>-G: GameResult
+    G-->>-UI: Victory: 5 paid, $92.16, avg 82.6
+    UI-->>M: VICTORY screen

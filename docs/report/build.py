@@ -1,5 +1,5 @@
 """
-Builds the PDF report: docs/report/Restaurant-Rush-Report.pdf
+Builds the report: docs/report/Restaurant-Rush-Report.pdf and Restaurant-Rush-Report.docx
 
   python3 docs/report/build.py
 
@@ -10,6 +10,7 @@ Steps
   3. checks out each stage tag into a temporary folder, builds it and replays its scripts
      to capture real, coloured terminal output for the functional evidence
   4. fills report.html and prints it to PDF with headless Chrome / Chromium
+  5. writes the editable Word version (build_docx.py: needs pandoc, python-docx and Pillow)
 
 Set CHROME=/path/to/chrome if Chrome is not in the default macOS location.
 """
@@ -148,7 +149,7 @@ def git_log():
 
 SECTIONS = ["1Overview", "2UMLclassdiagram", "3UMLsequencediagram", "4Designdiscussion",
             "5Howtheplayer", "6Developmentprocess", "7Functionalevidence", "8Ruleinterpretations",
-            "Whatworked"]
+            "9Reflection"]
 
 
 def section_pages(pdf):
@@ -162,7 +163,7 @@ def section_pages(pdf):
     for number, page in enumerate(pypdf.PdfReader(str(pdf)).pages, 1):
         if number <= 2:
             continue
-        text = re.sub(r"\s+", "", page.extract_text() or "")[:160]
+        text = re.sub(r"\s+", "", (page.extract_text() or "").replace("\uf001", "fi").replace("\uf002", "fl"))[:160]
         for n, key in enumerate(SECTIONS, 1):
             if n not in pages and key in text:
                 pages[n] = number
@@ -176,11 +177,12 @@ def inline_svg(name):
 
 def main():
     BUILD.mkdir(exist_ok=True)
-    print("1/4 class diagram")
+    print("1/5 class diagram")
     run([sys.executable, str(DIAGRAMS / "class_diagram.py")])
-    print("2/4 sequence diagrams")
+    print("2/5 sequence diagrams (SVG) and editable draw.io copies of all diagrams")
     render_sequences()
-    print("3/4 replaying the tagged stages")
+    run([sys.executable, str(DIAGRAMS / "drawio_export.py")])
+    print("3/5 replaying the tagged stages")
     r = capture_runs()
 
     shots = {
@@ -224,7 +226,7 @@ def main():
     shutil.copy(HERE / "report.css", BUILD / "report.css")
     pdf = HERE / "Restaurant-Rush-Report.pdf"
 
-    print("4/4 printing PDF")
+    print("4/5 printing PDF")
     pages = {}
     for attempt in (1, 2):
         page = template
@@ -243,6 +245,11 @@ def main():
             break
         pages = found
     print(f"  wrote {pdf.relative_to(ROOT)}" + (f" (contents: {pages})" if pages else ""))
+
+    print("5/5 Word version")
+    from build_docx import build_docx
+    docx = build_docx((HERE / "report.html").read_text(encoding="utf-8"), shots, CHROME)
+    print(f"  wrote {docx.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

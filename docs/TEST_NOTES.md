@@ -15,7 +15,8 @@ console and assert the outcome.
 > Scripts are tied to the stage they were written for, because each stage changes
 > the base setting (Stage 2 adds a Critic and a VIP; Stage 3 adds the Host, combos and
 > Happy Hour). Replay `stage1-*` at tag `stage-1`, `stage2-*` at tag `stage-2`, and so on:
-> `git checkout stage-1 && ./run.sh --script scripts/stage1-victory.txt`.
+> `git checkout stage-1 && ./build.sh && ./run.sh --script scripts/stage1-victory.txt` (rebuild after
+> every checkout, because the jar is not tracked by git).
 
 ## Stage 1: Regular customers only
 
