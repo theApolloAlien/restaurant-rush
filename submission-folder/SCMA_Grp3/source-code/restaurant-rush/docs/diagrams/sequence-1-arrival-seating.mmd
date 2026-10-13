@@ -1,0 +1,53 @@
+sequenceDiagram
+    autonumber
+    actor M as Manager
+    participant UI as :ConsoleUI
+    participant G as :Game
+    participant AS as :ArrivalSchedule
+    participant HH as :HappyHour
+    participant H as host:Host
+    participant R as :Restaurant
+    participant V as chloe:VIPCustomer
+    participant T as table1:Table
+
+    Note over M,T: Part 1 of 6. Stage 3 victory run (scripts/stage3-victory.txt), turn 7: VIP Chloe (#35;3) arrives, the manager switches on Happy Hour, and the Host seats her.
+
+    loop for turn = 1 to 18, while not game.isOver()
+        UI->>+G: beginTurn()
+        G->>+AS: arrivingOn(7)
+        AS->>V: «create» VIPCustomer(3, "Chloe", 7)
+        AS-->>-G: Optional(chloe)
+        G->>R: admit(chloe)
+        Note over R,V: Chloe joins the queue with satisfaction 100
+        G-->>-UI: ARRIVAL event
+        UI-->>M: dashboard and staff tasks
+        opt game.canStartHappyHour()
+            UI-->>M: happy hour now? [y/N]
+            M->>UI: "y" (manager choice)
+            alt answer is "y"
+                UI->>+G: startHappyHour()
+                G->>HH: activate(7)
+                G->>+HH: refresh(restaurant, 7)
+                HH->>R: awaitingService()
+                R-->>HH: ben, chloe
+                loop for each customer awaiting service
+                    HH->>V: recover(15)
+                end
+                Note over HH,V: Chloe is already at 100 and gains nothing. Ben, waiting for his combo, goes from 64 to 79.
+                HH-->>-G: refreshed: ben
+                G-->>-UI: ActionResult.done (2 turns left)
+            else answer is "n" or Enter
+                Note over UI,HH: no Happy Hour: Chloe's Pasta would be quoted at $16.20 (part 2)
+            end
+        end
+        M->>UI: "seat 3 1"
+        UI->>+G: direct(host, cmd)
+        G->>+H: perform(cmd, ctx)
+        H->>H: carryOut(cmd, ctx)
+        H->>R: seat(chloe, table1)
+        R->>V: seatAt(table1)
+        V->>T: assign(chloe)
+        H-->>-G: ActionResult.done
+        G-->>-UI: ActionResult.done
+        Note over M,T: Turn 7 continues in part 2: the Waiter takes Chloe's order.
+    end

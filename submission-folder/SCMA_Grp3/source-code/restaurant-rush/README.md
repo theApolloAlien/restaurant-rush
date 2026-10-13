@@ -34,12 +34,14 @@ You need only a JDK, version 17 or newer. There is no build tool to install and 
 ```
 
 On Windows, use `run.bat` and `test.bat` (add `--plain` if the console shows odd symbols).
-Without the scripts:
+Without the scripts, these two commands work in any shell (bash, cmd or PowerShell) and at every tag:
 
 ```bash
-javac --release 17 -d out $(find src -name '*.java')
+javac --release 17 -encoding UTF-8 -sourcepath src -d out src/rush/Main.java
 java -cp out rush.Main
 ```
+
+`javac` starts from `Main` and compiles every class the game uses.
 
 To play an earlier stage, check out its tag and **rebuild** before running. `run.sh` reuses an existing
 `restaurant-rush.jar`, which git does not track, so without `./build.sh` you would still be running the
@@ -51,7 +53,9 @@ git checkout stage-1
 git checkout main && ./build.sh
 ```
 
-On Windows no extra step is needed, because `run.bat` recompiles the sources every time.
+On Windows no extra step is needed, because `run.bat` recompiles the sources every time. The `run.bat` saved
+at each stage tag only works in a folder whose path has no spaces. If the path has spaces, use the two `javac`
+and `java` commands above.
 
 ## How to play
 
@@ -85,20 +89,27 @@ rush.model    Restaurant · Table · Customer ◁ Regular/VIP/Critic · Order ·
 ```
 
 * **Polymorphism**: customer types differ only in `satisfactionLossPerTurn()`,
-  `chooseFrom(Menu)` and `billFor(Money)`. The turn controller never checks a type.
+  `chooseFrom(Menu)`, `billFor(Money)` and `remarkOnPaying()` (plus their `type()` label). The turn
+  controller never checks a type.
 * **Template method**: `DirectedStaff.perform()` checks the task budget and the role's
   duties, then calls `carryOut()`. A broken rule throws `RuleViolation` and costs nothing.
-* **Composite**: a `ComboMeal` is a `MenuItem` made of two `Dish`es (90% of their price, summed units).
+* **Composite (one level)**: a `ComboMeal` is a `MenuItem` made of two `Dish`es (90% of their price, summed
+  units).
 * **Encapsulation**: money is integer cents; only `Restaurant` moves customers between the
   queue, a table and the door.
 
 ![Class diagram](docs/diagrams/class-diagram.svg)
 
-Sequence diagram (a VIP order during Happy Hour, from arrival to payment):
-[part A](docs/diagrams/sequence-1-arrival-order.svg) ·
-[part B](docs/diagrams/sequence-2-service-payment.svg) (sources in `docs/diagrams/*.mmd`).
+Sequence diagram (a VIP order during Happy Hour, from arrival to payment and the result check), in six parts
+with message numbers that carry on from part to part:
+[1 arrival and seating](docs/diagrams/sequence-1-arrival-seating.svg) ·
+[2 order and pricing](docs/diagrams/sequence-2-order-pricing.svg) ·
+[3 READY](docs/diagrams/sequence-3-ready.svg) ·
+[4 SERVED](docs/diagrams/sequence-4-served.svg) ·
+[5 eating and payment](docs/diagrams/sequence-5-eating-payment.svg) ·
+[6 result check](docs/diagrams/sequence-6-result.svg) (sources in `docs/diagrams/*.mmd`).
 
-Editable draw.io versions of all three diagrams are in `docs/diagrams/*.drawio`. Open them in
+Editable draw.io versions of every diagram are in `docs/diagrams/*.drawio`. Open them in
 [diagrams.net](https://app.diagrams.net), the draw.io desktop app, or the VS Code draw.io extension.
 
 ## Stages and change analysis
@@ -122,7 +133,7 @@ Compare: https://github.com/theApolloAlien/restaurant-rush/compare/stage-1...sta
 | `src/rush/model/VIPCustomer.java` | **new** | Loses 5 per turn; `billFor` gives 10% off |
 | `src/rush/model/CriticCustomer.java` | **new** | Loses 12 per turn; overrides `chooseFrom` to order the most elaborate dish; star review on payment |
 | `src/rush/model/Money.java` | +5 lines | `percent(int)` rounding half-up, first needed for the VIP discount |
-| `src/rush/control/GameConfig.java` | 2 lines | Registration: arrival #2 becomes a Critic and #3 a VIP (still six arrivals) |
+| `src/rush/control/GameConfig.java` | small | Registration (two arrival lines and their imports): arrival #2 becomes a Critic and #3 a VIP (still six arrivals) |
 | `src/rush/ui/Dashboard.java` | small | Colour per customer type and a guest-type legend (presentation only) |
 | `src/rush/Main.java` | 1 line | Edition label |
 | `test/rush/RulesTest.java`, `scripts/stage2-*`, docs | updated | New rule checks, Stage 2 runs |
@@ -138,7 +149,7 @@ Compare: https://github.com/theApolloAlien/restaurant-rush/compare/stage-2...sta
 | `src/rush/staff/Host.java` | **new** | `DirectedStaff` whose only duty is `SEAT`; reuses the shared seating helper |
 | `src/rush/model/Dish.java` | **new** | The concrete dish class extracted from `MenuItem` |
 | `src/rush/model/ComboMeal.java` | **new** | Two dishes: 90% of the combined price, summed units |
-| `src/rush/model/MenuItem.java` | **rewritten** | Concrete class → abstract (`price()`, `prepUnits()`). Its public API is unchanged, so `Order`, `Chef`, `Waiter` and the Critic need no edits |
+| `src/rush/model/MenuItem.java` | **rewritten** | Concrete class → abstract (`price()`, `prepUnits()`). Its public methods are unchanged, so `Order`, `Chef`, `Waiter` and the Critic need no edits; only the setup in `GameConfig` builds `Dish`es instead |
 | `src/rush/policy/PriceModifier.java`, `HappyHour.java` | **new** | Once per game, two turns, 20% off orders taken, +15 recovery for guests still waiting |
 | `src/rush/policy/PricingPolicy.java` | changed | Applies `PriceModifier`s after the customer's own discount (VIP first, then Happy Hour) |
 | `src/rush/model/Customer.java` | +14 lines | `recover(points)` for Happy Hour (capped at 100) |
@@ -146,13 +157,15 @@ Compare: https://github.com/theApolloAlien/restaurant-rush/compare/stage-2...sta
 | `src/rush/control/GameConfig.java` | small | Registration: menu with two combos; Host hired first |
 | `src/rush/control/GameEvent.java` | 1 line | `POLICY` event kind |
 | `src/rush/ui/ConsoleUI.java`, `Dashboard.java` | changed | Happy Hour prompt and remaining-duration display; staff with nothing to do wait automatically |
+| `src/rush/Main.java` | 1 line | Edition label |
+| `test/rush/RulesTest.java`, `scripts/stage3-*`, docs | updated | 6 new rule checks (22 in total), Stage 3 runs |
 | `Waiter`, `Chef`, `Cashier`, `DirectedStaff`, `Restaurant`, `Order` | **unchanged** | The Host and combos fit the existing abstractions |
 
 ## Reproducible runs
 
 | Script | Result |
 |---|---|
-| `scripts/stage1-victory.txt` | **Victory**: 5 paid, $66.00, average 79.2 (includes two rejected inputs) |
+| `scripts/stage1-victory.txt` | **Victory**: 5 paid, $66.00, average 79.2 (includes four rejected inputs: two on turn 1, one each on turns 9 and 10) |
 | `scripts/stage1-defeat.txt` | **Defeat**: 3 paid, $42.00 |
 | `scripts/stage2-victory.txt` | **Victory**: 5 paid, $67.20, average 76.0 (VIP pays $16.20; Critic orders Pasta) |
 | `scripts/stage2-defeat.txt` | **Defeat**: 3 paid, $43.20, average 59.3 |
@@ -192,8 +205,9 @@ docs/TEST_NOTES.md   turn-by-turn notes for the reproducible runs
 submission-folder/   the zip contents (SCMA_Grp3/), editable files, video script, prepare script
 ```
 
-To rebuild the report (needs Google Chrome; Mermaid is fetched from a CDN; the Word version also needs
-pandoc and the Python packages `python-docx` and `Pillow`):
+To rebuild the report (needs Google Chrome and the Python package `pypdf` for the contents page numbers;
+Mermaid is fetched from a CDN; the Word version also needs pandoc and the Python packages `python-docx` and
+`Pillow`):
 
 ```bash
 python3 docs/report/build.py                 # PDF, .docx and .drawio files

@@ -73,9 +73,15 @@ and without the Chef cooking an order on the turn it is taken:
 |---|:-:|:-:|:-:|:-:|---|
 | serve › order › seat | yes | 5 | $66.00 | 79.2 | Victory |
 | serve › order › seat | no | 4 | $51.00 | 66.0 | Victory |
+| serve › seat › order | yes | 5 | $66.00 | 79.2 | Victory |
+| serve › seat › order | no | 4 | $51.00 | 66.0 | Victory |
+| order › serve › seat | yes | 5 | $66.00 | 79.2 | Victory |
 | order › serve › seat | no | 4 | $51.00 | 64.0 | Victory |
+| order › seat › serve | yes | 4 | $51.00 | 76.0 | Victory |
+| order › seat › serve | no | 4 | $51.00 | 64.0 | Victory |
 | seat › order › serve | yes | 4 | $51.00 | 76.0 | Victory |
 | seat › order › serve | no | 4 | $51.00 | 60.0 | Victory (only just) |
+| seat › serve › order | yes | 4 | $51.00 | 78.0 | Victory |
 | seat › serve › order | no | 3 | $42.00 | 60.0 | **Defeat** |
 
 Serving before seating finishes customers sooner, which both frees tables and stops

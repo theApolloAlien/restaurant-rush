@@ -67,13 +67,15 @@ java -version
 > One design point: the interface only displays the game and passes our commands on. Every rule lives in the
 > domain objects. For example, whether a dish can be served is decided by `Order.serve`, not by the UI.
 
-Type `quit` to leave.
+Type `quit` to leave the game, then `3` to close the menu.
 
 ### Segment 2: manager choices and a constrained decision (02:00, about 2 minutes)
 
-**On screen:** switch to Stage 1 and play turn 1 live.
+**On screen:** switch to the git clone (the unzipped folder has no git history), check out Stage 1 and play
+turn 1 live.
 
 ```bash
+cd ~/restaurant-rush          # wherever you cloned the repository
 git checkout stage-1 && ./build.sh && ./run.sh
 ```
 
@@ -83,13 +85,13 @@ Choose `1`. On turn 1, as the Waiter, type `order 1`, then `dance`, then `seat 1
 > a table, the game tells me why that isn't allowed, and the Waiter's task isn't used up. A command it doesn't
 > know, like "dance", gets the same treatment. Now I'll seat her at table 1.
 
-Type `quit`, then replay the full Stage 1 victory run and jump to turn 10.
+Type `quit`, then `3`, then replay the full Stage 1 victory run and jump to turn 10.
 
 ```bash
 ./run.sh --script scripts/stage1-victory.txt | less -R      # then type /TURN 10
 ```
 
-> Now the interesting part. On turn 10, Dev walks in at the moment Chloe's Pasta becomes READY. We only have
+> Now the interesting part. On turn 10, Dev walks in just as Chloe's Pasta is READY to serve. We only have
 > one Waiter, who can do one task per turn, so we have to choose. If we serve Chloe, she stops losing
 > satisfaction and frees her table sooner. If we seat Dev, Chloe's dish sits there. We served Chloe, and Dev
 > waited one turn and lost 8 points.
@@ -106,9 +108,11 @@ Type `quit`, then replay the full Stage 1 victory run and jump to turn 10.
 
 ### Segment 3: READY → SERVED → payment (04:00, about 2 minutes)
 
-**On screen:** the same Stage 1 replay, starting from turn 8.
+**On screen:** the same Stage 1 replay, starting from turn 8. If you record this part separately, check out
+Stage 1 in the clone first.
 
 ```bash
+git checkout stage-1 && ./build.sh
 ./run.sh --script scripts/stage1-victory.txt | less -R      # then type /TURN 8
 ```
 
@@ -186,7 +190,7 @@ Choose `1`. Answer `n` to Happy Hour. Host: `seat 1 1`. Waiter: `order 1`. Chef:
 > turn on top of what the Waiter does. On turn 1, Hugo seats Ada, which leaves the Waiter free to take her
 > order straight away, and the Chef cooks it, all in the same turn. Without a Host that takes two turns.
 
-Type `quit`, then replay the Stage 3 victory run.
+Type `quit`, then `3`, then replay the Stage 3 victory run.
 
 ```bash
 ./run.sh --script scripts/stage3-victory.txt | less -R      # then type /TURN 4
@@ -255,7 +259,8 @@ git diff stage-2 stage-3 --stat -- src
 > runs and passes its own rule checks.
 >
 > From Stage 1 to Stage 2 the source change is small: six files. Two are the new customer classes, plus a
-> percentage helper in `Money`, two lines of registration in `GameConfig`, and colours in the dashboard.
+> percentage helper in `Money`, two lines of registration in `GameConfig`, colours in the dashboard, and the
+> edition label in `Main`.
 >
 > From Stage 2 to Stage 3 there's more: fourteen files. The new classes are `Host`, `Dish`, `ComboMeal`,
 > `PriceModifier` and `HappyHour`. `MenuItem` became abstract, but its public methods stayed the same, so
@@ -266,14 +271,14 @@ git diff stage-2 stage-3 --stat -- src
 > The README lists every new and changed file for both transitions, with the reason and a GitHub compare link.
 > The test script runs 22 rule checks, including the worked example from the brief, and all of them pass.
 
-**On screen:** the PDF report, section 2 (class diagram), then section 3 (sequence diagram, parts A and B).
+**On screen:** the PDF report, section 2 (class diagram), then section 3 (the sequence diagram, parts 1 to 6).
 
 > This is our final class diagram, which matches the Stage 3 code. The packages are layered from the UI down to
 > the model. The notes point out encapsulation in `Restaurant` and `Money`, polymorphism in the customer types,
 > and composition in `ComboMeal`.
 >
-> The sequence diagram follows Chloe, our VIP, from her arrival on turn 7 to her payment on turn 11, then the
-> result check. It shows the loop over turns, the optional Happy Hour, the alternative where a serve is
+> The sequence diagram is drawn in six parts, with message numbers that carry on across them. It follows
+> Chloe, our VIP, from her arrival on turn 7 to her payment on turn 11, then the result check. It shows the loop over turns, the optional Happy Hour, the alternative where a serve is
 > rejected, and the pricing step where VIP and Happy Hour combine into $12.96. That's the manager choice that
 > changes the outcome.
 

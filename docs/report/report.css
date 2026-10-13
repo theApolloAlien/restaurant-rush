@@ -109,6 +109,9 @@ td.r, th.r { text-align: right; }
 .callout.green { border-color: var(--green); background: #effaf1; }
 .callout.gold { border-color: var(--gold); background: #fff9e6; }
 .callout b:first-child { display: block; margin-bottom: 1mm; }
+.callout p { margin: 0; }
+.callout p + p { margin-top: 1mm; }
+table { break-inside: avoid; }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
 .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4mm; }
 .grid2 > *, .grid3 > * { min-width: 0; }
@@ -135,6 +138,7 @@ td.r, th.r { text-align: right; }
 .diagram svg { width: 100%; height: auto; display: block; }
 .diagram.class svg { max-height: 255mm; }
 .diagram.seq svg { max-height: 252mm; margin: 0 auto; }
+.diagram.seq.small svg { max-width: 62%; }
 
 /* ------------------------------------------------------------ terminal captures */
 figure.term {
@@ -152,8 +156,8 @@ figure.term pre {
 }
 
 /* ------------------------------------------------------------ tests */
-ul.tests { list-style: none; padding: 0; columns: 2; column-gap: 6mm; font-size: 8.8pt; }
-ul.tests li { break-inside: avoid; padding: .6mm 0; }
+ul.tests { list-style: none; padding: 0; columns: 2; column-gap: 6mm; font-size: 8.5pt; margin: 1mm 0; }
+ul.tests li { break-inside: avoid; padding: .3mm 0; line-height: 1.3; }
 ul.tests li b { font: 700 7.5pt var(--mono); border-radius: 1mm; padding: .2mm 1.2mm; margin-right: 1.5mm; }
 ul.tests li.pass b { background: #dcfce7; color: #166534; }
 ul.tests li.fail b { background: #fee2e2; color: #991b1b; }

@@ -8,15 +8,19 @@ What it does
   2. copies the editable files (report .docx, draw.io diagrams) into editable/
   3. turns the video script into a Word file, one member's part per page
   4. zips SCMA_Grp3/ as SCMA_Grp3.zip, or as SCMA_Grp3-DRAFT.zip while the video or the signed
-     declarations are still missing
+     declarations are still missing. The zip also gets stage-snapshots/, each stage tag exactly as
+     committed (git archive), so the stages can be checked without GitHub
 
 Run python3 docs/report/build.py first if the report or diagrams changed.
 """
+import io
 import re
 import shutil
 import subprocess
 import sys
+import tarfile
 import tempfile
+import time
 import zipfile
 from pathlib import Path
 
@@ -31,6 +35,21 @@ SOURCE_ITEMS = ["src", "test", "scripts", "build.sh", "run.sh", "test.sh", "run.
 VIDEO_TYPES = {".mp4", ".mov", ".mkv", ".webm", ".avi", ".m4v"}
 FORM_TYPES = {".pdf", ".docx", ".jpg", ".jpeg", ".png"}
 PLACEHOLDER = "[paste the video link here]"
+STAGES = ["stage-1", "stage-2", "stage-3"]
+SNAPSHOT_NOTE = """Stage snapshots: SCMA Group 3, Restaurant Rush
+
+Each folder is the repository exactly as committed at that git tag (made with `git archive <tag>`),
+so the three stages can be built and compared without GitHub. The final code is in
+source-code/restaurant-rush/.
+
+Build and replay a stage from inside its folder:
+
+  ./build.sh && ./run.sh --script scripts/stage1-victory.txt      (macOS, Linux)
+  javac --release 17 -encoding UTF-8 -sourcepath src -d out src/rush/Main.java
+  java -cp out rush.Main --script scripts/stage1-victory.txt     (any shell, including Windows)
+
+Compare two stages with any diff tool, for example: diff -r stage-1/src stage-2/src
+"""
 
 
 def copy(src, dst):
@@ -50,7 +69,8 @@ def refresh_pack():
         copy(ROOT / item, code / item)
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     note = ("> Copy of the repository README. The game itself is in `source-code/restaurant-rush/`, and the links\n"
-            "> below are relative to that folder. The PDF report is in `report/`.\n\n")
+            "> below are relative to that folder. The PDF report is in `report/`, and `stage-snapshots/` holds\n"
+            "> the code exactly as tagged at `stage-1`, `stage-2` and `stage-3`.\n\n")
     (PACK / "README.md").write_text(note + readme, encoding="utf-8")
     copy(ROOT / "docs/report/Restaurant-Rush-Report.pdf", PACK / "report" / "Restaurant-Rush-Report.pdf")
     print(f"  refreshed {PACK.relative_to(ROOT)}/ (source code, README, PDF report)")
@@ -58,7 +78,11 @@ def refresh_pack():
 
 def refresh_editable():
     copy(ROOT / "docs/report/Restaurant-Rush-Report.docx", EDIT / "Restaurant-Rush-Report.docx")
-    for f in sorted((ROOT / "docs/diagrams").glob("*.drawio")):
+    current = sorted((ROOT / "docs/diagrams").glob("*.drawio"))
+    for old in (EDIT / "diagrams").glob("*.drawio"):
+        if old.name not in {f.name for f in current}:
+            old.unlink()                     # a diagram that was renamed or removed in docs/diagrams
+    for f in current:
         copy(f, EDIT / "diagrams" / f.name)
     print(f"  refreshed {EDIT.relative_to(ROOT)}/ (report .docx, draw.io diagrams)")
 
@@ -98,6 +122,30 @@ def missing_items():
     return missing
 
 
+def add_stage_snapshots(z):
+    """Adds every stage tag, exactly as committed, under stage-snapshots/."""
+    entries = []
+    for tag in STAGES:
+        try:
+            archive = subprocess.run(["git", "archive", "--format=tar", tag], cwd=ROOT, capture_output=True,
+                                     check=True).stdout
+        except (OSError, subprocess.CalledProcessError) as e:
+            print(f"  ! could not read tag {tag} ({e}); stage snapshots left out of the zip")
+            return
+        with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
+            for member in tar.getmembers():
+                if member.isfile():
+                    entries.append((f"{GROUP}/stage-snapshots/{tag}/{member.name}", member.mtime, member.mode,
+                                    tar.extractfile(member).read()))
+    entries.append((f"{GROUP}/stage-snapshots/README.txt", time.time(), 0o644, SNAPSHOT_NOTE.encode("utf-8")))
+    for name, mtime, mode, data in entries:
+        info = zipfile.ZipInfo(name, date_time=time.localtime(mtime)[:6])
+        info.external_attr = (0o100000 | (mode & 0o777)) << 16
+        info.compress_type = zipfile.ZIP_DEFLATED
+        z.writestr(info, data)
+    print(f"  added stage-snapshots/ ({', '.join(STAGES)}, from git)")
+
+
 def build_zip(missing):
     name = f"{GROUP}-DRAFT.zip" if missing else f"{GROUP}.zip"
     target = HERE / name
@@ -107,6 +155,7 @@ def build_zip(missing):
         for f in sorted(PACK.rglob("*")):
             if f.is_file() and f.name != ".DS_Store":
                 z.write(f, f.relative_to(HERE))
+        add_stage_snapshots(z)
     size = target.stat().st_size / 1_000_000
     print(f"  wrote {target.relative_to(ROOT)} ({size:.1f} MB)")
     return target

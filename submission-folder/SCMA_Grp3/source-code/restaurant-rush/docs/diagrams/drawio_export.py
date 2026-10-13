@@ -2,8 +2,7 @@
 Writes editable draw.io versions of the report diagrams:
 
   docs/diagrams/class-diagram.drawio               (from class_diagram.py, same layout as the SVG)
-  docs/diagrams/sequence-1-arrival-order.drawio    (from the .mmd source)
-  docs/diagrams/sequence-2-service-payment.drawio  (from the .mmd source)
+  docs/diagrams/sequence-<n>-<name>.drawio         (one per part of the sequence diagram, from its .mmd)
 
 Open them in draw.io / diagrams.net (desktop app, the web app, or the VS Code extension).
 Every class, member, lifeline, message and fragment is a normal draw.io shape, so it can be moved
@@ -84,6 +83,7 @@ EDGE_STYLE = {
     "compose": "startArrow=diamondThin;startFill=1;startSize=18;endArrow=none;",
     "aggregate": "startArrow=diamondThin;startFill=0;startSize=18;endArrow=none;",
     "assoc": "endArrow=open;endSize=10;",
+    "assoc2": "endArrow=none;",
     "depend": "endArrow=open;endSize=10;dashed=1;",
 }
 SIDE = {"top": lambda f: (f, 0), "bottom": lambda f: (f, 1), "left": lambda f: (0, f), "right": lambda f: (1, f)}
@@ -182,17 +182,31 @@ def class_drawio():
                f"text;html=1;align=left;verticalAlign=middle;fontSize=10;fontColor=#6b7280;{SANS}",
                lx, ly - 30, 560, 16)
     legend = [("inherit", "generalisation"), ("realize", "realisation"), ("compose", "composition"),
-              ("aggregate", "aggregation"), ("assoc", "association"), ("depend", "dependency")]
+              ("aggregate", "aggregation"), ("assoc", "association"), ("depend", "dependency"),
+              ("assoc2", "association, both ways")]
     for i, (kind, name) in enumerate(legend):
         x, y = lx + (i % 3) * 195, ly + (i // 3) * 22
         doc.edge("", f"{EDGE_STYLE[kind]}html=1;strokeColor=#4b5563;strokeWidth=1.2;", src_pt=(x, y),
                  dst_pt=(x + 52, y))
         doc.vertex(name, f"text;html=1;align=left;verticalAlign=middle;fontSize=10.5;fontColor=#374151;{SANS}",
-                   x + 60, y - 8, 120, 16)
+                   x + 60, y - 8, 130, 16)
+    doc.vertex("<br>".join(escape(line) for line in cd.READING_NOTES),
+               f"text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#6b7280;{SANS}",
+               40, 1850, 540, 64)
     doc.write(HERE / "class-diagram.drawio")
 
 
 # ================================================================================== sequence diagrams
+
+# The sequence diagram is split into six parts; message numbers carry on from one part to the next.
+SEQUENCE_PARTS = [
+    ("sequence-1-arrival-seating", "Sequence diagram, part 1 (turn 7: arrival, Happy Hour, seating)"),
+    ("sequence-2-order-pricing", "Sequence diagram, part 2 (turn 7: order, pricing, cooking)"),
+    ("sequence-3-ready", "Sequence diagram, part 3 (turn 8: the order becomes READY)"),
+    ("sequence-4-served", "Sequence diagram, part 4 (turn 9: the order is SERVED)"),
+    ("sequence-5-eating-payment", "Sequence diagram, part 5 (turns 10-11: eating and payment)"),
+    ("sequence-6-result", "Sequence diagram, part 6 (after turn 18: the result check)"),
+]
 
 MSG = re.compile(r"^(\w+)\s*(-->>|->>)\s*([+-]?)(\w+)\s*:\s*(.*)$")
 CHAR_W = 6.1      # average width of an 11px Helvetica character
@@ -213,10 +227,15 @@ def guard(s):
 
 
 def parse(src):
-    parts, events = [], []
+    """Returns the participants, the events and the number of the first message."""
+    parts, events, first = [], [], 1
     for raw in src.splitlines():
         line = raw.strip()
-        if not line or line in ("sequenceDiagram", "autonumber"):
+        if not line or line == "sequenceDiagram":
+            continue
+        m = re.match(r"^autonumber(?:\s+(\d+))?$", line)
+        if m:
+            first = int(m.group(1) or 1)
             continue
         m = re.match(r"^(actor|participant)\s+(\w+)\s+as\s+(.+)$", line)
         if m:
@@ -246,18 +265,18 @@ def parse(src):
             raise SystemExit(f"cannot parse Mermaid line: {line}")
         a, arrow, act, b, text = m.groups()
         events.append(("msg", a, b, arrow == "-->>", act, clean(text)))
-    return parts, events
+    return parts, events, first
 
 
-def sequence_drawio(name, title):
-    parts, events = parse((HERE / f"{name}.mmd").read_text())
+def sequence_drawio(name, title, left=60.0):
+    parts, events, first = parse((HERE / f"{name}.mmd").read_text())
     ids = [p[0] for p in parts]
     idx = {p: i for i, p in enumerate(ids)}
     box_w = [40 if actor else max(96, tw(label) + 22) for _, label, actor in parts]
 
     # horizontal layout: grow the gap between lifelines until every message label fits
     gaps = [max(110, (box_w[i] + box_w[i + 1]) / 2 + 24) for i in range(len(ids) - 1)]
-    number = 0
+    number = first - 1
     for ev in events:
         if ev[0] == "msg":
             number += 1
@@ -278,7 +297,7 @@ def sequence_drawio(name, title):
                 gaps[i] = max(gaps[i], half + 60)
             if i > 0:
                 gaps[i - 1] = max(gaps[i - 1], half + 60)
-    cx = [60.0]
+    cx = [left]
     for g in gaps:
         cx.append(cx[-1] + g)
 
@@ -288,7 +307,7 @@ def sequence_drawio(name, title):
     activations = []                         # (participant, depth, y0, y1)
     stack = []                               # open fragments: dict(kind, label, y0, elses, extent, depth)
     items = []                               # drawn after layout: (kind, data)
-    number = 0
+    number = first - 1
 
     def touch(x0, x1):
         for frag in stack:
@@ -362,6 +381,11 @@ def sequence_drawio(name, title):
     for p in ids:                       # close anything left open
         while active[p]:
             activations.append((p, len(active[p]) - 1, active[p].pop(), y))
+    # keep fragments and notes on the page: if anything starts left of x=20, lay out again further right
+    leftmost = min([cx[i] - box_w[i] / 2 for i in range(len(ids))] +
+                   [d["x0"] for k, d, *_ in items if k == "frag"] + [d[0] for k, d, *_ in items if k == "note"])
+    if leftmost < 20:
+        return sequence_drawio(name, title, left + 20 - leftmost)
     height = y + 30
     width = cx[-1] + max(box_w[-1] / 2, 140) + 40
 
@@ -424,5 +448,5 @@ def sequence_drawio(name, title):
 
 if __name__ == "__main__":
     class_drawio()
-    sequence_drawio("sequence-1-arrival-order", "Sequence diagram, part A (turn 7)")
-    sequence_drawio("sequence-2-service-payment", "Sequence diagram, part B (turns 8-11 and result)")
+    for part, title in SEQUENCE_PARTS:
+        sequence_drawio(part, title)

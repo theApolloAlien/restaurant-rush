@@ -1,0 +1,25 @@
+sequenceDiagram
+    autonumber 107
+    actor M as Manager
+    participant UI as :ConsoleUI
+    participant D as :Dashboard
+    participant G as :Game
+    participant OB as :Objective
+    participant GR as :GameResult
+
+    Note over M,GR: Part 6 of 6. After turn 18: the result check (step 6).
+
+    UI->>+G: result()
+    G->>+OB: evaluate(scoreboard())
+    OB->>GR: «create» GameResult(targets, score)
+    OB-->>-G: result
+    G-->>-UI: result
+    UI->>+D: finalResult(game, result)
+    D->>GR: isVictory()
+    GR-->>D: true (5 paid, $92.16, average 82.6)
+    alt result.isVictory()
+        D-->>M: VICTORY screen with the three targets
+    else otherwise
+        D-->>M: DEFEAT screen with the targets missed
+    end
+    D-->>-UI: return

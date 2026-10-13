@@ -1,0 +1,42 @@
+sequenceDiagram
+    autonumber 55
+    actor M as Manager
+    participant UI as :ConsoleUI
+    participant G as :Game
+    participant HH as :HappyHour
+    participant W as waiter:Waiter
+    participant C as chef:Chef
+    participant V as chloe:VIPCustomer
+    participant O as :Order
+
+    Note over M,O: Part 3 of 6. Turn 8: the Pasta becomes READY, but it cannot be served until the next turn.
+
+    loop for turn = 1 to 18, while not game.isOver()
+        rect rgb(239, 250, 241)
+        Note over M,O: Turn 8 (Happy Hour, 1 turn left)
+        UI->>+G: beginTurn()
+        G->>+HH: refresh(restaurant, 8)
+        loop for each customer awaiting service
+            HH->>V: recover(15)
+        end
+        Note over V: 95 to 100 (Ben: 67 to 82)
+        HH-->>-G: refreshed: ben, chloe
+        G-->>-UI: POLICY events
+        Note over UI,W: The Waiter serves Ben's combo (not shown)
+        M->>UI: "cook 3"
+        UI->>+G: direct(chef, cmd)
+        G->>+C: perform(cmd, ctx)
+        C->>C: carryOut(cmd, ctx)
+        C->>O: prepareUnit(8)
+        Note over O: 2 of 2 units: status = READY, readyTurn = 8
+        C-->>-G: ActionResult.done (It is READY)
+        G-->>-UI: ActionResult.done
+        Note over W,O: The Waiter has already acted, so this dish can be served on turn 9 at the earliest
+        UI->>+G: endTurn()
+        loop step 5: for each customer in awaitingService()
+            G->>V: loseSatisfaction()
+        end
+        Note over V: still waiting for food: 100 to 95
+        G-->>-UI: events
+        end
+    end

@@ -18,7 +18,7 @@
   <table class="cover-table">
     <tr><th>Lab group</th><td>SCMA, Group 3</td></tr>
     <tr><th>Members</th><td>CCDS LEE SHENG KAI<br>CCDS LEONG XUAN HAO<br>CCDS POLOYAPOY RON JOSHUA ABES (Apollo)<br>CCDS VICTORIA HAUGAA</td></tr>
-    <tr><th>Repository</th><td>https://github.com/theApolloAlien/restaurant-rush</td></tr>
+    <tr><th>Repository</th><td><a href="https://github.com/theApolloAlien/restaurant-rush">https://github.com/theApolloAlien/restaurant-rush</a></td></tr>
     <tr><th>Stage tags</th><td><code>stage-1</code>, <code>stage-2</code>, <code>stage-3</code></td></tr>
     <tr><th>Build</th><td>Java 17 or newer, no external libraries. Run <code>./run.sh</code> (or <code>run.bat</code> on Windows).</td></tr>
   </table>
@@ -52,7 +52,7 @@
       <h4>Base setting</h4>
       <ul>
         <li>18 turns, 2 tables, no early ending</li>
-        <li>Waiter, Chef and Cashier, one task each per turn</li>
+        <li>Waiter, Chef and Cashier, one task each per turn (Stage 3 adds a Host)</li>
         <li>One arrival on turns 1, 4, 7, 10, 13 and 16</li>
         <li>Salad $9 (1 unit), Burger $15 (1), Pasta $18 (2)</li>
         <li>Win: at least 4 paid, $45 revenue and an average satisfaction of 60</li>
@@ -93,8 +93,9 @@ git checkout stage-1  # then ./build.sh</pre>
 <!-- =============================================================== 2 CLASS DIAGRAM -->
 <section class="wide-page">
   <h2><span class="num">2</span>UML class diagram (final design, Stage 3)</h2>
-  <p class="caption">Drawn from the code at tag <span class="tag">stage-3</span>. Getters, <code>toString()</code> and private
-    helpers are left out. Editable version: <code>docs/diagrams/class-diagram.drawio</code>.</p>
+  <p class="caption">Drawn from the code at tag <span class="tag">stage-3</span>. Getters, <code>toString()</code>, most
+    constructors and most private helpers are left out, and «record» components are shown as read-only properties.
+    Editable version: <code>docs/diagrams/class-diagram.drawio</code>.</p>
   <div class="diagram class">{{CLASS_DIAGRAM}}</div>
 </section>
 
@@ -105,14 +106,18 @@ git checkout stage-1  # then ./build.sh</pre>
       <h4>Encapsulation</h4>
       <p><code>Money</code> is immutable and stores integer cents, so prices add up exactly and each discount is
         rounded once. <code>Restaurant</code> is the only class that moves a customer between the queue, a table and
-        the door. The methods that change a table or a customer's status are package-private (<code>~</code>), and
-        every list is handed out read-only, so the UI cannot put the game into an impossible state.</p>
+        the door: <code>Customer.seatAt</code>, <code>placeOrder</code>, <code>startEating</code>, <code>pay</code> and
+        <code>leave</code>, and <code>Table.assign</code> and <code>release</code>, are package-private (<code>~</code>).
+        The few public methods that change state (<code>finishEating</code>, <code>loseSatisfaction</code>,
+        <code>recover</code>, <code>Order.prepareUnit</code> and <code>serve</code>) check the current status first.
+        Every list is handed out read-only, and the UI only gives commands to <code>Game</code>.</p>
     </div>
     <div class="card">
       <h4>Polymorphism</h4>
       <p><code>Customer</code> owns the visit life cycle. The subclasses only override
-        <code>satisfactionLossPerTurn()</code>, <code>chooseFrom(Menu)</code> and <code>billFor(Money)</code>, and
-        <code>Game</code>, <code>Waiter</code> and <code>Cashier</code> never check a customer's type. In the same way,
+        <code>satisfactionLossPerTurn()</code>, <code>chooseFrom(Menu)</code>, <code>billFor(Money)</code> and
+        <code>remarkOnPaying()</code>, plus the <code>type()</code> label, and <code>Game</code>, <code>Waiter</code>
+        and <code>Cashier</code> never check a customer's type. In the same way,
         <code>Dish</code> and <code>ComboMeal</code> answer <code>price()</code> and <code>prepUnits()</code> differently,
         while <code>Order</code> and <code>Chef</code> treat them the same.</p>
     </div>
@@ -128,8 +133,8 @@ git checkout stage-1  # then ./build.sh</pre>
       <p><code>StaffMember</code> holds the per-turn task budget. <code>DirectedStaff</code> adds the template method
         <code>perform()</code>, and <code>Waiter</code>, <code>Chef</code> and <code>Host</code> fill in
         <code>duties()</code> and <code>carryOut()</code>. The Cashier takes no instructions, so it extends
-        <code>StaffMember</code> directly. <code>PriceModifier</code> is the only interface, implemented by
-        <code>HappyHour</code>.</p>
+        <code>StaffMember</code> directly. <code>HappyHour</code> implements the <code>PriceModifier</code>
+        interface.</p>
     </div>
   </div>
   <p>The packages form layers, and dependencies only point one way:
@@ -147,38 +152,62 @@ git checkout stage-1  # then ./build.sh</pre>
   <h2><span class="num">3</span>UML sequence diagram</h2>
   <p>The scenario comes from the Stage 3 victory run (<code>scripts/stage3-victory.txt</code>). It follows
     <b>VIP customer #3 Chloe</b> from her arrival on turn 7 to her payment on turn 11, and then the result check
-    after turn 18. The diagram is split into two parts so it stays readable when printed. Message numbers below
-    refer to the numbers on the arrows.</p>
+    after turn 18. It is drawn in six parts so that it stays readable when printed. The message numbers carry on
+    from one part to the next, and the table below refers to them.</p>
   <table>
-    <tr><th style="width:30%">Required element</th><th>Where to find it</th></tr>
-    <tr><td>Customer arrival and order</td><td>Part A, messages 1–4 (arrival) and 22–37 (<code>chooseFrom</code>, <code>quote</code>, <code>placeOrder</code>, <code>«create» Order</code>)</td></tr>
-    <tr><td>Waiter and Chef assignments</td><td>Part A, 15–21 (Host), 22–37 (Waiter), 38–41 (Chef); Part B, 4–8 and 9–18</td></tr>
-    <tr><td>READY then SERVED</td><td>Part B: <code>prepareUnit(8)</code> sets READY (7–8); <code>serve(9)</code> is guarded by <code>[status == READY, readyTurn &lt; turn]</code> (12–15)</td></tr>
-    <tr><td>Eating and payment</td><td>Part B: <code>finishEating(10)</code> (20); on turn 11 <code>collectPayment</code>, <code>pay()</code>, <code>markPaid()</code>, table released, revenue added (24–34)</td></tr>
-    <tr><td>Result check</td><td>Part B, 35–39: <code>result()</code> calls <code>Objective.evaluate(scoreboard())</code></td></tr>
-    <tr><td>Stage 2 and 3 behaviour</td><td>VIP pricing (<code>billFor</code>, 10% off) and Happy Hour (<code>activate</code>, <code>refresh</code> and <code>recover</code>, <code>adjust</code>, 20% off)</td></tr>
-    <tr><td>Guards and loops</td><td><code>loop</code> over turns, waiting customers and recovery; <code>opt [game.canStartHappyHour()]</code>; <code>alt</code> for a serve that succeeds or is rejected; <code>opt</code> for the Cashier</td></tr>
+    <tr><th style="width:27%">Required element</th><th>Where to find it</th></tr>
+    <tr><td>Customer arrival and order</td><td>Part 1, messages 1–7 (<code>arrivingOn</code>, «create», <code>admit</code>); part 2, 27–44 (<code>chooseFrom</code>, <code>quote</code>, <code>placeOrder</code>, «create» <code>Order</code>)</td></tr>
+    <tr><td>Waiter and Chef assignments</td><td>Host 18–26; Waiter 27–44 and 70–82; Chef 45–51 and 60–66. Every instruction goes through <code>Game.direct</code> and the template method <code>perform</code>, which calls <code>carryOut</code></td></tr>
+    <tr><td>READY then SERVED</td><td>Part 3: <code>prepareUnit(8)</code> makes the order READY (64). Part 4: <code>serve(9)</code> (75) succeeds only if <code>status == READY and readyTurn &lt; turn</code>, otherwise it is rejected and the task is not used (76–82)</td></tr>
+    <tr><td>Eating and payment</td><td>Part 5: <code>finishEating(10)</code> (84). On turn 10 the Cashier charges Ben, who has been ready longer (86–90). On turn 11: <code>collectPayment</code>, <code>pay()</code>, <code>markPaid()</code>, <code>release()</code> and the revenue update (92–106)</td></tr>
+    <tr><td>Result check</td><td>Part 6, 107–117: <code>result()</code>, <code>Objective.evaluate</code>, <code>GameResult.isVictory()</code>, then the Victory or Defeat screen</td></tr>
+    <tr><td>Stage 2 and 3 behaviour</td><td>VIP pricing (<code>billFor</code>, 10% off, 35–36); Happy Hour (<code>activate</code>, <code>refresh</code>, <code>recover</code> and <code>adjust</code>, 10–17, 37–38 and 56–58); the Host (18–26)</td></tr>
+    <tr><td>Guards and loops</td><td><code>loop</code> over turns, waiting customers, price modifiers, guests and the Waiter's retries; <code>opt [game.canStartHappyHour()]</code>; <code>alt</code> for the manager's Happy Hour answer, a serve that succeeds or is rejected, and Victory or Defeat; <code>opt</code> for the Cashier</td></tr>
   </table>
   <div class="callout">
-    <b>The manager choice that changes the outcome</b>
-    On turn 7 the manager switches on Happy Hour before the Waiter takes Chloe's order.
-    <code>PricingPolicy.quote</code> applies the VIP discount first and then Happy Hour, so her Pasta is locked at
-    $18.00 × 0.9 × 0.8 = <b>$12.96</b> instead of $16.20, and the waiting Critic recovers 15 points on turns 7 and 8.
+    <p><b>The manager choice that changes the outcome</b></p>
+    <p>On turn 7 the manager answers <code>y</code> to Happy Hour (message 9) before the Waiter takes Chloe's order.
+    <code>PricingPolicy.quote</code> applies the VIP discount first and then Happy Hour (34–39), so her Pasta is locked
+    at $18.00 × 0.9 × 0.8 = <b>$12.96</b> instead of $16.20, and the waiting Critic recovers 15 points on turns 7 and 8.
     Over the whole run this costs $3.24 in revenue but raises the final average satisfaction from 75.6 to <b>82.6</b>
-    (see Section 5).
+    (see Section 5).</p>
   </div>
 </section>
 
 <section class="wide-page">
-  <h2>3A. Turn 7: arrival, Happy Hour, seating, ordering and pricing</h2>
-  <p class="caption">Editable version: <code>docs/diagrams/sequence-1-arrival-order.drawio</code></p>
+  <h2>Sequence diagram, part 1. Turn 7: arrival, Happy Hour and seating (messages 1–26)</h2>
+  <p class="caption">Editable version: <code>docs/diagrams/sequence-1-arrival-seating.drawio</code></p>
   <div class="diagram seq">{{SEQ_1}}</div>
 </section>
 
 <section class="wide-page">
-  <h2>3B. Turns 8 to 11: READY, SERVED, eating, payment and the result check</h2>
-  <p class="caption">Editable version: <code>docs/diagrams/sequence-2-service-payment.drawio</code></p>
+  <h2>Sequence diagram, part 2. Turn 7: ordering, pricing and cooking (messages 27–54)</h2>
+  <p class="caption">Editable version: <code>docs/diagrams/sequence-2-order-pricing.drawio</code></p>
   <div class="diagram seq">{{SEQ_2}}</div>
+</section>
+
+<section class="wide-page">
+  <h2>Sequence diagram, part 3. Turn 8: the order becomes READY (messages 55–69)</h2>
+  <p class="caption">Editable version: <code>docs/diagrams/sequence-3-ready.drawio</code></p>
+  <div class="diagram seq">{{SEQ_3}}</div>
+</section>
+
+<section class="wide-page">
+  <h2>Sequence diagram, part 4. Turn 9: the order is SERVED (messages 70–82)</h2>
+  <p class="caption">Editable version: <code>docs/diagrams/sequence-4-served.drawio</code></p>
+  <div class="diagram seq">{{SEQ_4}}</div>
+</section>
+
+<section class="wide-page">
+  <h2>Sequence diagram, part 5. Turns 10 and 11: eating and payment (messages 83–106)</h2>
+  <p class="caption">Editable version: <code>docs/diagrams/sequence-5-eating-payment.drawio</code></p>
+  <div class="diagram seq">{{SEQ_5}}</div>
+</section>
+
+<section class="wide-page">
+  <h2>Sequence diagram, part 6. After turn 18: the result check (messages 107–117)</h2>
+  <p class="caption">Editable version: <code>docs/diagrams/sequence-6-result.drawio</code></p>
+  <div class="diagram seq small">{{SEQ_6}}</div>
 </section>
 
 <!-- =============================================================== 4 DESIGN -->
@@ -210,8 +239,9 @@ git checkout stage-1  # then ./build.sh</pre>
   <p><b>Open/closed.</b> Going from Stage 1 to Stage 2 added the VIP and Critic without touching <code>Game</code>,
     <code>Customer</code>, <code>Restaurant</code>, <code>Order</code> or any staff class
     (<code>git diff stage-1 stage-2 -- src/rush/control/Game.java src/rush/staff</code> is empty). In Stage 3 the Host
-    is a new <code>DirectedStaff</code> registered in <code>GameConfig</code>, and the console's staff loop prompts it
-    without any change. Combos needed no change to <code>Order</code>, <code>Chef</code> or <code>Waiter</code>.</p>
+    is a new <code>DirectedStaff</code> registered in <code>GameConfig</code>, and the console's loop over
+    <code>game.directedStaff()</code> picks it up unchanged (<code>ConsoleUI</code> changed only for the Happy Hour
+    prompt and auto-wait, see Section 6). Combos needed no change to <code>Order</code>, <code>Chef</code> or <code>Waiter</code>.</p>
   <p><b>Liskov substitution.</b> The status transitions (<code>seatAt</code>, <code>placeOrder</code>, <code>pay</code>,
     <code>leave</code>) are written once in <code>Customer</code> and no subclass overrides them. The overrides keep the
     base contract: a loss rate of at least 0, an item from the given menu, and a bill no higher than the menu price.
@@ -231,7 +261,7 @@ git checkout stage-1  # then ./build.sh</pre>
   <table>
     <tr><th style="width:22%">Pattern</th><th style="width:30%">Where</th><th>Why</th></tr>
     <tr><td>Template method</td><td><code>DirectedStaff.perform</code></td><td>The task-budget check, the duty check and "a rejected move costs nothing" are written once for every role.</td></tr>
-    <tr><td>Composite</td><td><code>MenuItem</code>, <code>Dish</code>, <code>ComboMeal</code></td><td>A combo is a menu item made of menu items, so its price and units are derived rather than copied.</td></tr>
+    <tr><td>Composite (one level)</td><td><code>MenuItem</code>, <code>Dish</code>, <code>ComboMeal</code></td><td>A combo is a menu item built from two <code>Dish</code> leaves, so its price and units are derived rather than copied. A combo cannot contain another combo.</td></tr>
     <tr><td>Strategy</td><td><code>PricingPolicy</code> with <code>PriceModifier</code></td><td>Restaurant-wide pricing rules plug in after the customer's own discount, in a fixed order.</td></tr>
     <tr><td>Command (simple)</td><td><code>Command</code> record</td><td>Separates what the manager typed from who checks it, so a script is just a list of commands.</td></tr>
     <tr><td>Factory references</td><td><code>ArrivalSchedule.at(4, "Ben", CriticCustomer::new)</code></td><td>Each stage registers its customers without the schedule knowing the customer classes.</td></tr>
@@ -257,7 +287,7 @@ git checkout stage-1  # then ./build.sh</pre>
     (loss rate, bill, food choice) cut across every state. We would have had seven state classes and three customer
     types to keep in sync. An enum with guarded methods in one abstract class is shorter, easy to test, and keeps the
     polymorphism in the customer types, where the brief asks for it.</p>
-  <p class="small">We also rejected a <code>CustomerType</code> enum with switches in the controller, because the brief
+  <p>We also rejected a <code>CustomerType</code> enum with switches in the controller, because the brief
     asks for dispatch through the customer objects. We also rejected a Decorator chain for prices, because
     "VIP first, then Happy Hour" reads more clearly as an ordered list in <code>PricingPolicy</code>.</p>
 </section>
@@ -315,8 +345,11 @@ git checkout stage-1  # then ./build.sh</pre>
     <tr><th style="width:12%">Commit</th><th style="width:14%">Date</th><th>Message</th><th style="width:12%">Tag</th></tr>
     {{GIT_LOG}}
   </table>
-  <p class="small">Compare on GitHub: https://github.com/theApolloAlien/restaurant-rush/compare/stage-1...stage-2 and
-    https://github.com/theApolloAlien/restaurant-rush/compare/stage-2...stage-3. Locally: <code>git diff stage-1 stage-2 --stat</code>.</p>
+  <p class="small">The table runs up to the <span class="tag">stage-3</span> tag. Later commits only add the report,
+    diagrams and submission files: <code style="white-space:nowrap">git diff stage-3 main -- src test scripts</code> is empty.
+    Compare on GitHub: <a href="https://github.com/theApolloAlien/restaurant-rush/compare/stage-1...stage-2">stage-1...stage-2</a>
+    and <a href="https://github.com/theApolloAlien/restaurant-rush/compare/stage-2...stage-3">stage-2...stage-3</a>.
+    Locally: <code style="white-space:nowrap">git diff stage-1 stage-2 --stat</code>.</p>
 
   <h3>Stage 1 to Stage 2: customer behaviour (commit <code>a721c2d</code>)</h3>
   <table>
@@ -324,7 +357,7 @@ git checkout stage-1  # then ./build.sh</pre>
     <tr><td><code>model/VIPCustomer.java</code></td><td>new</td><td>Loses 5 per turn; <code>billFor</code> gives 10% off.</td></tr>
     <tr><td><code>model/CriticCustomer.java</code></td><td>new</td><td>Loses 12 per turn; overrides <code>chooseFrom</code> to order the most elaborate dish, and leaves a star review.</td></tr>
     <tr><td><code>model/Money.java</code></td><td>+5 lines</td><td><code>percent(int)</code>, rounded half-up, first needed for the VIP discount.</td></tr>
-    <tr><td><code>control/GameConfig.java</code></td><td>2 lines</td><td>Registration: Ben (turn 4) becomes a Critic and Chloe (turn 7) a VIP. Still six arrivals.</td></tr>
+    <tr><td><code>control/GameConfig.java</code></td><td>small</td><td>Registration (two arrival lines and their imports): Ben (turn 4) becomes a Critic and Chloe (turn 7) a VIP. Still six arrivals.</td></tr>
     <tr><td><code>ui/Dashboard.java</code></td><td>small</td><td>A colour per customer type and a legend in the help screen (presentation only).</td></tr>
     <tr><td><code>Main.java</code>, tests, scripts, docs</td><td>updated</td><td>Edition label, 4 new rule checks, Stage 2 scripts and notes.</td></tr>
     <tr><td><code>Game</code>, <code>Customer</code>, all staff, <code>Restaurant</code>, <code>Order</code></td><td>unchanged</td><td>The new behaviour is dispatched through the new subclasses.</td></tr>
@@ -335,7 +368,7 @@ git checkout stage-1  # then ./build.sh</pre>
     <tr><th style="width:31%">File</th><th style="width:12%">Change</th><th>Reason</th></tr>
     <tr><td><code>staff/Host.java</code></td><td>new</td><td>A <code>DirectedStaff</code> whose only duty is <code>SEAT</code>. It reuses the shared seating helper.</td></tr>
     <tr><td><code>model/Dish.java</code>, <code>model/ComboMeal.java</code></td><td>new</td><td>The concrete dish moved into <code>Dish</code>. <code>ComboMeal</code> takes 90% of the price and the sum of the units of its two dishes.</td></tr>
-    <tr><td><code>model/MenuItem.java</code></td><td>rewritten</td><td>Changed from concrete to abstract (<code>price()</code>, <code>prepUnits()</code>). The public API is the same, so <code>Order</code>, <code>Chef</code>, <code>Waiter</code> and the Critic did not change.</td></tr>
+    <tr><td><code>model/MenuItem.java</code></td><td>rewritten</td><td>Changed from concrete to abstract (<code>price()</code>, <code>prepUnits()</code>). Its public methods are the same, so <code>Order</code>, <code>Chef</code>, <code>Waiter</code> and the Critic did not change. Only the setup in <code>GameConfig</code> now builds <code>Dish</code>es.</td></tr>
     <tr><td><code>policy/PriceModifier.java</code>, <code>policy/HappyHour.java</code></td><td>new</td><td>Once per game, two turns, 20% off orders taken, and 15 points of recovery at turn start for customers still waiting.</td></tr>
     <tr><td><code>policy/PricingPolicy.java</code></td><td>changed</td><td>Applies a list of <code>PriceModifier</code>s after <code>billFor</code>, so the VIP discount comes first and Happy Hour second.</td></tr>
     <tr><td><code>model/Customer.java</code></td><td>+14 lines</td><td><code>recover(points)</code>, capped at 100, only for customers still waiting for service.</td></tr>
@@ -343,6 +376,7 @@ git checkout stage-1  # then ./build.sh</pre>
     <tr><td><code>control/GameConfig.java</code></td><td>small</td><td>Registration: the menu is built from <code>Dish</code>es plus two combos, and the Host is hired first.</td></tr>
     <tr><td><code>control/GameEvent.java</code></td><td>1 line</td><td>A <code>POLICY</code> event kind for Happy Hour recovery.</td></tr>
     <tr><td><code>ui/ConsoleUI.java</code>, <code>ui/Dashboard.java</code></td><td>changed</td><td>The Happy Hour prompt and remaining-duration line, and auto-wait for staff with nothing useful to do.</td></tr>
+    <tr><td><code>Main.java</code>, tests, scripts, docs</td><td>updated</td><td>Edition label, 6 new rule checks (22 in total), Stage 3 scripts and notes.</td></tr>
     <tr><td><code>Waiter</code>, <code>Chef</code>, <code>Cashier</code>, <code>DirectedStaff</code>, <code>Restaurant</code>, <code>Order</code></td><td>unchanged</td><td>The Host and combos fit the existing abstractions.</td></tr>
   </table>
   <p>Earlier behaviour still works. The Stage 3 rule checks still cover the Stage 1 worked example (Pasta from arrival
@@ -402,7 +436,7 @@ git checkout stage-1  # then ./build.sh</pre>
   {{TERM_HAPPY2}}
 </section>
 
-<section class="ev">
+<section>
   <h3>7.6 Victory and defeat (Stage 3)</h3>
   {{TERM_S3_VICTORY}}
   {{TERM_S3_DEFEAT}}

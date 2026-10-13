@@ -1,0 +1,53 @@
+sequenceDiagram
+    autonumber 27
+    actor M as Manager
+    participant UI as :ConsoleUI
+    participant G as :Game
+    participant W as waiter:Waiter
+    participant C as chef:Chef
+    participant P as :PricingPolicy
+    participant HH as :HappyHour
+    participant R as :Restaurant
+    participant V as chloe:VIPCustomer
+    participant O as :Order
+
+    Note over M,O: Part 2 of 6. Turn 7 continued: Chloe orders while Happy Hour is on, the Chef starts cooking, and the turn ends.
+
+    loop for turn = 1 to 18, while not game.isOver()
+        M->>UI: "order 3"
+        UI->>+G: direct(waiter, cmd)
+        G->>+W: perform(cmd, ctx)
+        W->>W: carryOut(cmd, ctx)
+        W->>W: takeOrder(chloe, ctx)
+        W->>V: chooseFrom(menu)
+        V-->>W: Pasta
+        W->>+P: quote(chloe, Pasta, 7)
+        P->>V: billFor($18.00)
+        V-->>P: $16.20 (VIP 10% off)
+        loop for each PriceModifier
+            P->>HH: adjust($16.20, 7)
+            HH-->>P: $12.96 (Happy Hour 20% off)
+        end
+        P-->>-W: $12.96
+        W->>R: placeOrder(chloe, Pasta, $12.96, 7)
+        R->>O: «create» Order(chloe, Pasta, $12.96, 7)
+        R->>V: placeOrder(order)
+        W-->>-G: ActionResult.done
+        G-->>-UI: ActionResult.done
+        Note over P,O: Price locked at $12.96. Without the Happy Hour choice (message 9) it would be $16.20.
+        M->>UI: "cook 3"
+        UI->>+G: direct(chef, cmd)
+        G->>+C: perform(cmd, ctx)
+        C->>C: carryOut(cmd, ctx)
+        C->>O: prepareUnit(7)
+        Note over O: 1 of 2 units done
+        C-->>-G: ActionResult.done
+        G-->>-UI: ActionResult.done
+        UI->>+G: endTurn()
+        Note over G,V: step 4: nobody finishes eating or pays this turn
+        loop step 5: for each customer in awaitingService()
+            G->>V: loseSatisfaction()
+        end
+        Note over V: VIP loses 5: 100 to 95 (Ben, a Critic, loses 12)
+        G-->>-UI: events
+    end

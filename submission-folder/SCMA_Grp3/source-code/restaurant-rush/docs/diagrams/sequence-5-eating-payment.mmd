@@ -1,0 +1,54 @@
+sequenceDiagram
+    autonumber 83
+    actor M as Manager
+    participant UI as :ConsoleUI
+    participant G as :Game
+    participant K as cashier:Cashier
+    participant R as :Restaurant
+    participant V as chloe:VIPCustomer
+    participant O as :Order
+    participant T as table1:Table
+
+    Note over M,T: Part 5 of 6. Turns 10 and 11: Chloe finishes eating and pays.
+
+    loop for turn = 1 to 18, while not game.isOver()
+        rect rgb(255, 249, 230)
+        Note over M,T: Turn 10, endTurn() step 4: eating, then one payment
+        UI->>+G: endTurn()
+        loop for each guest
+            G->>V: finishEating(10)
+            V-->>G: true
+        end
+        Note over V: EATING to READY_TO_PAY, readyToPayTurn = 10
+        G->>+K: collectPayment(ctx)
+        K->>K: nextToPay(ctx)
+        K->>V: canPayOn(10)
+        V-->>K: false (ready only this turn)
+        K-->>-G: Payment(ben, $24.30)
+        Note over K,V: Ben has been ready since turn 9, so he pays first. Chloe waits for turn 11.
+        G-->>-UI: events
+        end
+
+        rect rgb(255, 244, 236)
+        Note over M,T: Turn 11, endTurn() step 4: payment
+        UI->>+G: endTurn()
+        G->>+K: collectPayment(ctx)
+        K->>K: nextToPay(ctx)
+        K->>V: canPayOn(11)
+        V-->>K: true
+        opt oldest customer able to pay, and the Cashier's task is unused
+            K->>+R: collectPayment(chloe)
+            R->>O: price()
+            O-->>R: $12.96 (locked on turn 7)
+            R->>V: pay()
+            V->>O: markPaid()
+            V->>V: vacateTable()
+            V->>T: release()
+            Note over R: revenue = revenue.plus($12.96)
+            R-->>-K: $12.96
+        end
+        K-->>-G: Payment(chloe, $12.96)
+        G-->>-UI: events (satisfaction 95 recorded, table 1 free)
+        end
+    end
+    Note over M,T: The game plays on to turn 18. The result check is in part 6.

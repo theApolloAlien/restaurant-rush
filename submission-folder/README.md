@@ -8,11 +8,12 @@ submission-folder/
 │   ├── README.md                  repository URL, stage comparisons, video timestamps
 │   ├── source-code/restaurant-rush/   Java source with build and run instructions
 │   ├── report/Restaurant-Rush-Report.pdf
+│   ├── stage-snapshots/           stage-1, stage-2, stage-3 as tagged (added to the zip by the script)
 │   ├── video/                     the recording, or VIDEO_LINK.txt with a download link
 │   └── declarations/              signed course forms (kept out of git)
 ├── editable/                      working files, not part of the zip
 │   ├── Restaurant-Rush-Report.docx    editable Word version of the report
-│   ├── diagrams/*.drawio          class diagram and both sequence diagrams for draw.io
+│   ├── diagrams/*.drawio          class diagram and the six sequence diagram parts for draw.io
 │   └── video-script/              4-member script (Markdown and Word, one part per page)
 └── prepare_submission.py          refreshes the copies and builds the zip
 ```
@@ -22,6 +23,7 @@ submission-folder/
 | Item (brief §6.1) | Where |
 |---|---|
 | Source code with build and run instructions | `SCMA_Grp3/source-code/restaurant-rush/` (see its `README.md`: `./run.sh`, `./test.sh`, `run.bat`) |
+| Stage snapshots (brief §5, GitHub evidence) | GitHub tags, plus `SCMA_Grp3/stage-snapshots/` in the zip so the stages can be checked offline |
 | README with repository URL, stage comparisons and video timestamps | `SCMA_Grp3/README.md` |
 | PDF report | `SCMA_Grp3/report/Restaurant-Rush-Report.pdf` |
 | Video, or an accessible download link | `SCMA_Grp3/video/` (still to record) |

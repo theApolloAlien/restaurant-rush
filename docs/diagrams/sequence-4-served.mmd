@@ -1,0 +1,36 @@
+sequenceDiagram
+    autonumber 70
+    actor M as Manager
+    participant UI as :ConsoleUI
+    participant G as :Game
+    participant W as waiter:Waiter
+    participant V as chloe:VIPCustomer
+    participant O as :Order
+
+    Note over M,O: Part 4 of 6. Turn 9: the Waiter serves the READY Pasta.
+
+    loop for turn = 1 to 18, while not game.isOver()
+        rect rgb(238, 244, 255)
+        Note over M,O: Turn 9
+        loop while waiter.hasTaskLeft()
+            M->>UI: "serve 3"
+            UI->>+G: direct(waiter, cmd)
+            G->>+W: perform(cmd, ctx)
+            W->>W: carryOut(cmd, ctx)
+            W->>W: serve(chloe, ctx)
+            W->>+O: serve(9)
+            alt status == READY and readyTurn < turn
+                Note over O: status = SERVED
+                O->>V: startEating(9)
+                O-->>W: return
+                W-->>G: ActionResult.done (task used)
+                G-->>UI: ActionResult.done
+            else still cooking, or READY only this turn
+                O-->>-W: throws RuleViolation
+                W-->>-G: ActionResult.rejected (task not used)
+                G-->>-UI: reason shown, the manager chooses again
+            end
+        end
+        Note over V: EATING: Chloe loses no more satisfaction
+        end
+    end

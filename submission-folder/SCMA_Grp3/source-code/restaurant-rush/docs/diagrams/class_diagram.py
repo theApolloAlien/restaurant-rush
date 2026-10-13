@@ -40,8 +40,12 @@ CLASSES = {
                       [],
                       ["+parse(line : String) : Input", "_+usage(Verb) : String"]),
     "Terminal": (40, 640, "ui", None,
-                 ["-in : BufferedReader", "-out : PrintStream", "-echoInput : boolean"],
-                 ["+prompt(text : String) : Optional<String>", "+println(line : String) : void"]),
+                 ["-in : BufferedReader", "-out : PrintStream", "-theme : Theme", "-echoInput : boolean"],
+                 ["+prompt(prompt : String) : Optional<String>", "+println(line : String) : void"]),
+    "Theme": (40, 815, "ui", None,
+              ["-color : boolean", "-unicode : boolean"],
+              ["+unicode() : boolean", "+satisfactionBar(value : int) : String",
+               "_+padRight(String, width : int) : String"]),
 
     # ----------------------------------------------------------------- control
     "Game": (485, 60, "control", None,
@@ -61,15 +65,17 @@ CLASSES = {
                          "+arrivingOn(turn : int) : Optional<Customer>"]),
     "GameEvent": (915, 400, "control", "record",
                   ["+kind : Kind", "+message : String"], []),
+    "GameEvent.Kind": (1100, 380, "control", "enumeration",
+                       ["ARRIVAL", "EATING", "PAYMENT", "PATIENCE", "DEPARTURE", "POLICY"], []),
     "Objective": (1320, 60, "control", "record",
                   ["+minPaidCustomers : int", "+minRevenue : Money", "+minAverageSatisfaction : int"],
                   ["_+base() : Objective", "+evaluate(Scoreboard) : GameResult"]),
-    "GameResult": (1320, 235, "control", "record",
+    "GameResult": (1320, 225, "control", "record",
                    ["+targets : List<Target>", "+score : Scoreboard"],
                    ["+isVictory() : boolean"]),
-    "Scoreboard": (1320, 360, "control", "record",
+    "Scoreboard": (1320, 345, "control", "record",
                    ["+servedCount : int", "+paidCount : int", "+departures : int", "+revenue : Money",
-                    "+averageSatisfaction : OptionalDouble"],
+                    "+averageSatisfaction : OptionalDouble", "+turnsUsed : int", "+maxTurns : int"],
                    ["+averageText() : String"]),
 
     # ------------------------------------------------------------------ policy
@@ -82,7 +88,7 @@ CLASSES = {
     "HappyHour": (1675, 300, "policy", None,
                   ["_+DURATION_TURNS : int = 2", "_+DISCOUNT_PERCENT : int = 20", "_+RECOVERY : int = 15",
                    "-startTurn : int"],
-                  ["+isAvailable() : boolean", "+activate(turn : int) : void",
+                  ["+isAvailable() : boolean", "+activate(turn : int) : void", "+isActiveOn(turn : int) : boolean",
                    "+turnsRemaining(turn : int) : int", "+adjust(Money, int) : Money",
                    "+refresh(Restaurant, int) : List<Customer>"]),
 
@@ -99,29 +105,36 @@ CLASSES = {
                        "_#seatCustomer(String, Command, TurnContext) : String"]),
     "Cashier": (700, 600, "staff", None,
                 ["_-OLDEST_FIRST : Comparator<Customer>"],
-                ["+nextToPay(TurnContext) : Optional<Customer>",
+                ["+role() : String", "+nextToPay(TurnContext) : Optional<Customer>",
                  "+collectPayment(TurnContext) : Optional<Payment>"]),
     "Waiter": (900, 720, "staff", None,
                [],
-               ["+duties() : Set<Verb>", "#carryOut(Command, TurnContext) : String",
-                "-takeOrder(Customer, TurnContext) : String", "-serve(Customer, TurnContext) : String"]),
-    "Chef": (900, 845, "staff", None, [], ["+duties() : Set<Verb>", "#carryOut(Command, TurnContext) : String"]),
-    "Host": (900, 940, "staff", None, [], ["+duties() : Set<Verb>", "#carryOut(Command, TurnContext) : String"]),
+               ["+role() : String", "+duties() : Set<Verb>", "#carryOut(Command, TurnContext) : String",
+                "#usefulCommands(TurnContext) : List<Command>"]),
+    "Chef": (900, 833, "staff", None, [], ["+role() : String", "+duties() : Set<Verb>",
+                                          "#carryOut(Command, TurnContext) : String",
+                                          "#usefulCommands(TurnContext) : List<Command>"]),
+    "Host": (900, 946, "staff", None, [], ["+role() : String", "+duties() : Set<Verb>",
+                                          "#carryOut(Command, TurnContext) : String",
+                                          "#usefulCommands(TurnContext) : List<Command>"]),
     "Command": (1250, 600, "staff", "record",
                 ["+verb : Verb", "+customerId : Integer", "+tableNo : Integer"],
-                ["_+seat(int, int) : Command", "_+waitTurn() : Command"]),
+                ["_+seat(int, int) : Command", "_+takeOrder(int) : Command", "_+serve(int) : Command",
+                 "_+cook(int) : Command", "_+waitTurn() : Command"]),
     "Verb": (1500, 600, "staff", "enumeration",
              ["SEAT", "ORDER", "SERVE", "COOK", "WAIT"], []),
-    "ActionResult": (1250, 770, "staff", "record",
-                     ["+succeeded : boolean", "+message : String"], []),
-    "TurnContext": (1250, 900, "staff", "record",
+    "ActionResult": (1250, 812, "staff", "record",
+                     ["+succeeded : boolean", "+message : String"],
+                     ["_+done(String) : ActionResult", "_+rejected(String) : ActionResult"]),
+    "TurnContext": (1250, 950, "staff", "record",
                     ["+turn : int", "+restaurant : Restaurant", "+pricing : PricingPolicy"], []),
 
     # ------------------------------------------------------------------- model
     "Restaurant": (40, 1130, "model", None,
                    ["-tables : List<Table>", "-queue : List<Customer>", "-guests : List<Customer>",
                     "-orders : List<Order>", "-revenue : Money"],
-                   ["+admit(Customer) : void", "+seat(Customer, Table) : void",
+                   ["+admit(Customer) : void", "+seat(Customer, Table) : void", "+customer(id : int) : Customer",
+                    "+table(number : int) : Table", "+firstFreeTable() : Optional<Table>",
                     "+placeOrder(Customer, MenuItem, Money, int) : Order", "+collectPayment(Customer) : Money",
                     "+depart(Customer) : void", "+awaitingService() : List<Customer>",
                     "+averagePaidSatisfaction() : OptionalDouble"]),
@@ -129,9 +142,11 @@ CLASSES = {
               ["-number : int", "-occupant : Customer"],
               ["+isFree() : boolean", "~assign(Customer) : void", "~release() : void"]),
     "Customer": (560, 1430, "model", "abstract",
-                 ["-id : int", "-name : String", "-satisfaction : int", "-status : CustomerStatus",
+                 ["_+MAX_SATISFACTION : int = 100", "-id : int", "-name : String", "-arrivalTurn : int",
+                  "-satisfaction : int", "-status : CustomerStatus",
                   "-servedTurn : int", "-readyToPayTurn : int"],
-                 ["*+type() : String", "*+satisfactionLossPerTurn() : int", "+chooseFrom(Menu) : MenuItem",
+                 ["#Customer(int, String, int)", "*+type() : String", "*+satisfactionLossPerTurn() : int",
+                  "+chooseFrom(Menu) : MenuItem",
                   "+billFor(menuPrice : Money) : Money", "+remarkOnPaying() : String",
                   "+loseSatisfaction() : int", "+recover(points : int) : int", "+finishEating(turn : int) : boolean",
                   "+canPayOn(turn : int) : boolean", "~seatAt(Table) : void", "~placeOrder(Order) : void",
@@ -143,15 +158,16 @@ CLASSES = {
                         ["+type() : String", "+satisfactionLossPerTurn() : int"]),
     "VIPCustomer": (900, 1585, "model", None,
                     ["_+SATISFACTION_LOSS : int = 5", "_+DISCOUNT_PERCENT : int = 10"],
-                    ["+satisfactionLossPerTurn() : int", "+billFor(menuPrice : Money) : Money"]),
-    "CriticCustomer": (900, 1715, "model", None,
+                    ["+type() : String", "+satisfactionLossPerTurn() : int",
+                     "+billFor(menuPrice : Money) : Money", "+remarkOnPaying() : String"]),
+    "CriticCustomer": (900, 1730, "model", None,
                        ["_+SATISFACTION_LOSS : int = 12"],
-                       ["+satisfactionLossPerTurn() : int", "+chooseFrom(Menu) : MenuItem",
+                       ["+type() : String", "+satisfactionLossPerTurn() : int", "+chooseFrom(Menu) : MenuItem",
                         "+remarkOnPaying() : String"]),
     "Order": (1290, 1430, "model", None,
               ["-price : Money", "-placedTurn : int", "-unitsDone : int", "-status : OrderStatus",
                "-readyTurn : int"],
-              ["+prepareUnit(turn : int) : void", "+serve(turn : int) : void", "+describe() : String",
+              ["~Order(Customer, MenuItem, Money, int)", "+prepareUnit(turn : int) : void", "+serve(turn : int) : void", "+describe() : String",
                "~markPaid() : void", "~cancel() : void"]),
     "OrderStatus": (1290, 1670, "model", "enumeration",
                     ["IN_PREPARATION", "READY", "SERVED", "PAID", "CANCELLED"], []),
@@ -168,9 +184,9 @@ CLASSES = {
                   ["_+PRICE_PERCENT : int = 90"],
                   ["+price() : Money", "+prepUnits() : int", "+components() : List<Dish>"]),
     "Money": (1650, 1650, "model", None,
-              ["-cents : long"],
-              ["_+ofCents(long) : Money", "+plus(Money) : Money", "+percent(int) : Money",
-               "+isAtLeast(Money) : boolean"]),
+              ["_+ZERO : Money", "-cents : long"],
+              ["-Money(cents : long)", "_+ofCents(long) : Money", "_+dollars(long) : Money", "+plus(Money) : Money",
+               "+percent(int) : Money", "+isAtLeast(Money) : boolean", "+compareTo(Money) : int"]),
     "RuleViolation": (2010, 1130, "model", "exception",
                       [], ["+RuleViolation(message : String)"]),
 }
@@ -186,18 +202,21 @@ EDGES = [
     ("Dashboard", "Game", "depend", None, None, "reads", ("right", .1), ("left", .55), None),
     ("ConsoleUI", "CommandParser", "compose", "1", "1", None, ("left", .9), ("left", .4), [(30, None), (30, None)]),
     ("ConsoleUI", "Terminal", "assoc", None, "1", None, ("left", .6), ("left", .3), [(25, None), (25, None)]),
+    ("Terminal", "Theme", "assoc", None, "1", "theme", ("bottom", .5), ("top", .5), None),
+    ("Dashboard", "Theme", "assoc", None, "1", None, ("right", .85), ("right", .5), [(385, None), (385, None)]),
 
     ("Game", "GameConfig", "assoc", None, "1", "config", ("right", .1), ("left", .2), None),
     ("GameConfig", "ArrivalSchedule", "compose", "1", "1", None, ("bottom", .3), ("top", .3), None),
     ("GameConfig", "Objective", "compose", "1", "1", None, ("right", .3), ("left", .3), None),
     ("Game", "GameEvent", "depend", None, None, "creates", ("right", .9), ("left", .5), None),
+    ("GameEvent", "GameEvent.Kind", "assoc", None, "1", None, ("right", .5), ("left", .456), None),
     ("Objective", "GameResult", "depend", None, None, "creates", ("bottom", .5), ("top", .5), None),
     ("GameResult", "Scoreboard", "compose", "1", "1", None, ("bottom", .5), ("top", .5), None),
     ("Game", "PricingPolicy", "compose", "1", "1", "pricing", ("top", .8), ("top", .5),
      [(None, 42), (None, 42)]),
     ("Game", "HappyHour", "compose", "1", "1", "happyHour", ("right", .55), ("left", .55),
      [(1645, None), (1645, None)]),
-    ("Game", "DirectedStaff", "compose", "1", "3 (Host, Waiter, Chef)", None, ("bottom", .602), ("top", .536), None),
+    ("Game", "DirectedStaff", "compose", "1", "3 {ordered}", None, ("bottom", .602), ("top", .536), None),
     ("Game", "Cashier", "compose", "1", "1", None, ("bottom", .849), ("top", .178), None),
     ("Game", "Restaurant", "compose", "1", "1", None, ("left", .92), ("top", .55),
      [(455, None), (455, 1105), (None, 1105)]),
@@ -209,51 +228,65 @@ EDGES = [
     ("Waiter", "DirectedStaff", "inherit", None, None, None, ("left", .5), ("right", .1), None),
     ("Chef", "DirectedStaff", "inherit", None, None, None, ("left", .5), ("right", .45), None),
     ("Host", "DirectedStaff", "inherit", None, None, None, ("left", .5), ("right", .9), None),
-    ("Waiter", "Command", "depend", None, None, "performs", ("right", .3), ("left", .9), None),
-    ("Waiter", "ActionResult", "depend", None, None, "returns", ("right", .7), ("left", .5), None),
+    ("Waiter", "Command", "depend", None, None, None, ("right", .3), ("left", .9), None),
+    ("DirectedStaff", "ActionResult", "depend", None, None, None, ("right", .02), ("left", .5), [(1220, None)]),
     ("Command", "Verb", "assoc", None, "1", None, ("right", .3), ("left", .3), None),
-    ("Host", "TurnContext", "depend", None, None, "uses", ("right", .4), ("left", .6), None),
+    ("Host", "TurnContext", "depend", None, None, None, ("right", .4), ("left", .6), None),
     ("TurnContext", "PricingPolicy", "assoc", None, "1", "pricing", ("right", .7), ("right", .5),
      [(2030, None), (2030, None)]),
 
     ("PricingPolicy", "PriceModifier", "aggregate", "1", "0..*", "modifiers", ("bottom", .2), ("top", .2), None),
     ("HappyHour", "PriceModifier", "realize", None, None, None, ("top", .2), ("bottom", .2), None),
 
-    ("Restaurant", "Table", "compose", "1", "2", "tables", ("bottom", .2), ("top", .2), None),
+    ("Restaurant", "Table", "compose", "1", "1..*", "tables", ("bottom", .2), ("top", .2), None),
     ("Restaurant", "Customer", "aggregate", "1", "0..*", "queue, guests", ("right", .55), ("top", .3), None),
     ("Restaurant", "Order", "compose", "1", "0..*", "orders", ("right", .3), ("top", .5), None),
     ("Restaurant", "Menu", "assoc", None, "1", "menu", ("right", .04), ("left", .126), None),
-    ("Table", "Customer", "assoc", None, "0..1", "occupant", ("right", .2), ("left", .2), None),
+    ("Table", "Customer", "assoc2", "0..1", "0..1", "occupant / table", ("right", .2), ("left", .2), None),
     ("Customer", "CustomerStatus", "assoc", None, "1", None, ("left", .85), ("right", .5), None),
     ("RegularCustomer", "Customer", "inherit", None, None, None, ("left", .3), ("right", .2), None),
     ("VIPCustomer", "Customer", "inherit", None, None, None, ("left", .5), ("right", .5), None),
     ("CriticCustomer", "Customer", "inherit", None, None, None, ("left", .5), ("right", .85), None),
-    ("Customer", "Order", "assoc", "1", "0..1", "order", ("right", .02), ("left", .03), None),
+    ("Customer", "Order", "assoc2", "1", "0..1", "customer / order", ("right", .02), ("left", .03), None),
     ("Order", "MenuItem", "assoc", None, "1", "item", ("right", .15), ("left", .7), None),
     ("Order", "OrderStatus", "assoc", None, "1", None, ("bottom", .5), ("top", .5), None),
     ("Menu", "MenuItem", "aggregate", "1", "1..*", "items", ("bottom", .5), ("top", .5), None),
     ("Dish", "MenuItem", "inherit", None, None, None, ("top", .5), ("bottom", .5), None),
     ("ComboMeal", "MenuItem", "inherit", None, None, None, ("top", .3), ("right", .5), None),
-    ("ComboMeal", "Dish", "aggregate", "1", "2", "components", ("left", .7), ("right", .7), None),
+    ("ComboMeal", "Dish", "aggregate", "0..*", "2", "components", ("left", .7), ("right", .7), None),
 ]
+
+# role labels that go below (horizontal) / left of (vertical) the line, clear of the multiplicities
+LABEL_FLIP = {("Game", "GameConfig"), ("PricingPolicy", "PriceModifier"), ("ComboMeal", "Dish"),
+              ("Restaurant", "Table")}
 
 NOTES = [
     # (x, y, w, title, lines, target, (side, frac))
     (290, 1545, 222, "POLYMORPHISM",
-     ["Game never asks a customer's", "type. Loss rate, food choice and", "bill are dispatched to the",
-      "subclass (Stage 2)."], "Customer", ("left", .4)),
+     ["Game never asks a customer's", "type. Loss rate, food choice, bill", "and paying remark are dispatched",
+      "to the subclass (Stage 2)."], "Customer", ("left", .4)),
     (690, 1272, 310, "ENCAPSULATION + COMPOSITION",
-     ["Restaurant owns its tables and queue and is the", "only object that moves a customer between",
-      "queue, table and door. Lists are read-only."], "Restaurant", ("right", .85)),
+     ["Restaurant owns its tables and orders and is the", "only object that moves a customer between",
+      "queue, table and door (the ~ methods). Its lists", "are handed out read-only."], "Restaurant",
+     ("right", .85)),
     (485, 980, 330, "TEMPLATE METHOD",
      ["perform() checks the task budget and duty, then", "calls carryOut(). A broken rule throws",
       "RuleViolation, so the task is not used up."], "DirectedStaff", ("bottom", .4)),
-    (1930, 1575, 310, "COMPOSITE",
+    (1930, 1575, 310, "COMPOSITE (one level)",
      ["A ComboMeal is a MenuItem made of two", "Dishes: price = 90% of their sum,",
       "units = sum. Callers never tell them apart."], "ComboMeal", ("bottom", .5)),
-    (1990, 300, 250, "STRATEGY (Stage 3)",
+    (2045, 300, 205, "STRATEGY (Stage 3)",
      ["New pricing rules plug in as", "PriceModifiers. VIP discount", "first, then Happy Hour."],
      "HappyHour", ("right", .3)),
+]
+
+
+# Reading notes printed under the class boxes (bottom left of the model package).
+READING_NOTES = [
+    "«record» components are shown as + read-only properties: Java gives each a private final field",
+    "and a public accessor. Getters, toString(), most constructors and most private helpers are left out.",
+    "Nested types used as member types: ArrivalSchedule.Arrival «record», ArrivalSchedule.CustomerFactory",
+    "«interface», GameResult.Target «record», Cashier.Payment «record», CommandParser.Input «record».",
 ]
 
 
@@ -400,10 +433,17 @@ def draw_edge(edge):
         (x1, y1), (x2, y2) = pts[best], pts[best + 1]
         mx, my = (x1 + x2) / 2, (y1 + y2) / 2
         lw = len(label) * 5.6 + 8
+        flip = (src, dst) in LABEL_FLIP
         if abs(x2 - x1) >= abs(y2 - y1):
-            out.append(f'<rect x="{mx - lw / 2:.1f}" y="{my - 15:.1f}" width="{lw:.1f}" height="13" rx="3" '
+            ry = my + 3 if flip else my - 15
+            out.append(f'<rect x="{mx - lw / 2:.1f}" y="{ry:.1f}" width="{lw:.1f}" height="13" rx="3" '
                        f'fill="#ffffff" fill-opacity=".85"/>')
-            out.append(text(mx, my - 5, label, size=10, fill="#4b5563", anchor_="middle", family="sans",
+            out.append(text(mx, ry + 10, label, size=10, fill="#4b5563", anchor_="middle", family="sans",
+                            style="italic"))
+        elif flip:
+            out.append(f'<rect x="{mx - 4 - lw:.1f}" y="{my - 9:.1f}" width="{lw:.1f}" height="13" rx="3" '
+                       f'fill="#ffffff" fill-opacity=".85"/>')
+            out.append(text(mx - 8, my + 1, label, size=10, fill="#4b5563", anchor_="end", family="sans",
                             style="italic"))
         else:
             out.append(f'<rect x="{mx + 4:.1f}" y="{my - 9:.1f}" width="{lw:.1f}" height="13" rx="3" '
@@ -433,7 +473,8 @@ def draw_note(note):
 def legend():
     x, y = 1650, 1880
     items = [("inherit", "generalisation"), ("realize", "realisation"), ("compose", "composition"),
-             ("aggregate", "aggregation"), ("assoc", "association"), ("depend", "dependency")]
+             ("aggregate", "aggregation"), ("assoc", "association"), ("depend", "dependency"),
+             ("assoc2", "association, both ways")]
     out = []
     for i, (kind, name) in enumerate(items):
         col, row = i % 3, i // 3
@@ -447,6 +488,8 @@ def legend():
         out.append(text(lx + 62, ly + 4, name, size=10.5, fill="#374151", family="sans"))
     out.append(text(x, y - 18, "Visibility: + public   - private   # protected   ~ package.   "
                                 "Italic = abstract, underlined = static.", size=10, fill="#6b7280", family="sans"))
+    for i, line in enumerate(READING_NOTES):
+        out.append(text(40, 1862 + i * 15, line, size=10, fill="#6b7280", family="sans"))
     return "\n".join(out)
 
 

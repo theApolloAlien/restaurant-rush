@@ -1,9 +1,9 @@
 @echo off
 rem Compiles the game and the rule checks, then runs them on Windows.
+rem javac starts from RulesTest and compiles every class it uses from src and test. Relative
+rem paths keep this working when the folder name contains spaces.
 cd /d "%~dp0"
 chcp 65001 > nul
-if not exist out-test mkdir out-test
-dir /s /b src\*.java test\*.java > sources.txt
-javac --release 17 -encoding UTF-8 -d out-test @sources.txt || exit /b 1
-del sources.txt
+if exist out-test rmdir /s /q out-test
+javac --release 17 -encoding UTF-8 -sourcepath "src;test" -d out-test test\rush\RulesTest.java || exit /b 1
 java -cp out-test rush.RulesTest

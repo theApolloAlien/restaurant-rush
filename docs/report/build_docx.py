@@ -10,6 +10,7 @@ terminal output, so the two versions always say the same thing.
     page breaks before each section, and A3 landscape pages for the diagrams (as in the PDF)
 """
 import copy
+import html
 import re
 import subprocess
 from pathlib import Path
@@ -31,8 +32,12 @@ OUT = HERE / "Restaurant-Rush-Report.docx"
 FONT, MONO = "Calibri", "Consolas"
 INK, ACCENT, MUTED = RGBColor(0x1F, 0x29, 0x37), RGBColor(0xB6, 0x52, 0x2B), RGBColor(0x6B, 0x72, 0x80)
 WIDE = {"CLASS_DIAGRAM": ("class-diagram.svg", "Class diagram", 24.0),
-        "SEQ_1": ("sequence-1-arrival-order.svg", "Sequence diagram part A", 23.0),
-        "SEQ_2": ("sequence-2-service-payment.svg", "Sequence diagram part B", 23.0)}
+        "SEQ_1": ("sequence-1-arrival-seating.svg", "Sequence diagram part 1", 24.0),
+        "SEQ_2": ("sequence-2-order-pricing.svg", "Sequence diagram part 2", 24.0),
+        "SEQ_3": ("sequence-3-ready.svg", "Sequence diagram part 3", 24.0),
+        "SEQ_4": ("sequence-4-served.svg", "Sequence diagram part 4", 24.0),
+        "SEQ_5": ("sequence-5-eating-payment.svg", "Sequence diagram part 5", 24.0),
+        "SEQ_6": ("sequence-6-result.svg", "Sequence diagram part 6", 12.0)}
 A3_W, A3_H = Cm(42.0), Cm(29.7)
 
 
@@ -175,7 +180,11 @@ def add_field(paragraph, instruction, placeholder=""):
     sep = OxmlElement("w:fldChar")
     sep.set(qn("w:fldCharType"), "separate")
     run._r.append(sep)
-    paragraph.add_run(placeholder)
+    lines = placeholder if isinstance(placeholder, list) else [placeholder]
+    for i, line in enumerate(lines):
+        result = paragraph.add_run(line)
+        if i < len(lines) - 1:
+            result.add_break()
     run = paragraph.add_run()
     end = OxmlElement("w:fldChar")
     end.set(qn("w:fldCharType"), "end")
@@ -200,7 +209,8 @@ def add_contents(doc):
     title = first_heading.insert_paragraph_before("Contents")
     title.style = doc.styles["Heading 1"]
     toc = insert_paragraph_after(title)
-    add_field(toc, 'TOC \\o "1-2" \\h \\z \\u', "Right-click and choose Update Field to show the contents.")
+    headings = [p.text for p in doc.paragraphs if p.style.name == "Heading 1" and p.text[:1].isdigit()]
+    add_field(toc, 'TOC \\o "1-2" \\h \\z \\u', headings)
     settings = doc.settings.element
     update = OxmlElement("w:updateFields")
     update.set(qn("w:val"), "true")
@@ -262,12 +272,31 @@ def wide_sections(doc):
             after.paragraph_format.page_break_before = False
 
 
+def size_pictures(doc, widths):
+    """Pandoc shrinks every picture to the A4 text width; give each one the width it was rendered for and
+    replace the internal marker in its alt text with the caption."""
+    for shape in doc.inline_shapes:
+        pr = shape._inline.docPr
+        key = pr.get("descr", "")
+        if key not in widths:
+            continue
+        width_cm, caption = widths[key]
+        ratio = shape.height / shape.width
+        shape.width = Cm(width_cm)
+        shape.height = int(shape.width * ratio)
+        pr.set("descr", caption)
+        pr.set("title", caption)
+
+
 def build_docx(template, shots, chrome, pandoc="pandoc"):
     IMG.mkdir(parents=True, exist_ok=True)
     filled = template
+    widths = {}
     for key, value in shots.items():
         if key.startswith("TERM_"):
+            caption = re.search(r"<em>(.*?)</em>", value)
             png = render_terminal(chrome, key, value)
+            widths[key] = (16.5, html.unescape(caption.group(1)) if caption else "Terminal output")
             value = f'<p><img src="img/{png.name}" alt="{key}" style="width:16.5cm"></p>'
         elif key in WIDE:
             svg_name, alt, max_h = WIDE[key]
@@ -276,6 +305,7 @@ def build_docx(template, shots, chrome, pandoc="pandoc"):
             width = height * w / h
             if width > 38.5:
                 width, height = 38.5, 38.5 * h / w
+            widths[f"WIDE:{alt}"] = (width, alt)
             value = f'<p><img src="img/{png.name}" alt="WIDE:{alt}" style="width:{width:.1f}cm"></p>'
         filled = filled.replace("{{" + key + "}}", value)
     filled = re.sub(r"\{\{PAGE_\d+\}\}", "", filled)
@@ -307,6 +337,7 @@ def build_docx(template, shots, chrome, pandoc="pandoc"):
     cover[2].paragraph_format.space_after = Pt(28)
     add_contents(doc)
     wide_sections(doc)
+    size_pictures(doc, widths)
     for section in doc.sections:
         add_footer(section)
     doc.core_properties.title = "Restaurant Rush: Group Assignment Report"

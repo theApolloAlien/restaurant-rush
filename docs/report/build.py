@@ -33,19 +33,20 @@ sys.path.insert(0, str(HERE))
 from ansi2html import convert  # noqa: E402
 
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
-SEQUENCES = ["sequence-1-arrival-order", "sequence-2-service-payment"]
+SEQUENCES = ["sequence-1-arrival-seating", "sequence-2-order-pricing", "sequence-3-ready", "sequence-4-served",
+             "sequence-5-eating-payment", "sequence-6-result"]
 
 MERMAID_PAGE = """<!doctype html><meta charset=utf-8><body style="margin:0;background:#fff">
 <pre id=src style=display:none>{src}</pre><div id=out></div>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
 <script>
-mermaid.initialize({{startOnLoad:false, theme:'base', sequence:{{useMaxWidth:false, mirrorActors:true,
- messageFontSize:13, noteFontSize:12.5, actorFontSize:14, boxMargin:8}},
+mermaid.initialize({{startOnLoad:false, theme:'base', sequence:{{useMaxWidth:false, mirrorActors:false,
+ messageMargin:24, boxMargin:6, noteMargin:6, actorMargin:36, width:130, height:52}},
  themeVariables:{{fontFamily:'Helvetica Neue, Helvetica, Arial, sans-serif', primaryColor:'#fff4ec',
  primaryBorderColor:'#c8603a', primaryTextColor:'#1f2937', lineColor:'#4b5563', noteBkgColor:'#fffbe6',
  noteBorderColor:'#d9b74a', actorBkg:'#c8603a', actorTextColor:'#ffffff', actorBorder:'#a84e2d',
  signalColor:'#374151', signalTextColor:'#111827', labelBoxBkgColor:'#eef4ff', labelBoxBorderColor:'#3a5ea8',
- loopTextColor:'#3a5ea8', activationBkgColor:'#ffe7d6', activationBorderColor:'#c8603a',
+ loopTextColor:'#3a5ea8', labelTextColor:'#3a5ea8', activationBkgColor:'#ffe7d6', activationBorderColor:'#c8603a',
  sequenceNumberColor:'#ffffff'}}}});
 mermaid.render('{diagram_id}', document.getElementById('src').textContent)
   .then(r => {{ document.getElementById('out').innerHTML = r.svg }})
@@ -136,7 +137,8 @@ def test_list(output):
 
 
 def git_log():
-    log = run(["git", "log", "--reverse", "--date=short", "--format=%h|%ad|%s|%D"], cwd=ROOT)
+    """Commits up to the stage-3 tag. Later commits only add documentation (see the note under the table)."""
+    log = run(["git", "log", "--reverse", "--date=short", "--format=%h|%ad|%s|%D", "stage-3"], cwd=ROOT)
     rows = []
     for line in log.strip().splitlines():
         sha, date, subject, refs = line.split("|", 3)
@@ -216,8 +218,7 @@ def main():
         "TESTS_3": test_list(r["tests3"]),
         "GIT_LOG": git_log(),
         "CLASS_DIAGRAM": inline_svg("class-diagram.svg"),
-        "SEQ_1": inline_svg("sequence-1-arrival-order.svg"),
-        "SEQ_2": inline_svg("sequence-2-service-payment.svg"),
+        **{f"SEQ_{n}": inline_svg(f"{name}.svg") for n, name in enumerate(SEQUENCES, 1)},
     }
 
     template = (HERE / "report.html").read_text(encoding="utf-8")
