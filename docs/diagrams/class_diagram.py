@@ -1,5 +1,5 @@
 """
-Generates docs/diagrams/class-diagram.svg, the final (Stage 3) UML class diagram.
+Generates docs/diagrams/01-class-diagram.svg, the final (Stage 3) UML class diagram.
 
 The layout is placed by hand so the diagram stays readable when printed; every
 class, member and relationship below mirrors the Java code in src/rush.
@@ -522,7 +522,7 @@ def build():
         parts.append(draw_class(c))
     parts.append(legend())
     parts.append("</svg>")
-    out = Path(__file__).with_name("class-diagram.svg")
+    out = Path(__file__).with_name("01-class-diagram.svg")
     out.write_text("\n".join(parts), encoding="utf-8")
     print("wrote", out)
     for c, (x, y, w, h) in GEOM.items():

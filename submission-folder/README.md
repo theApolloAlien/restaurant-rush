@@ -13,7 +13,7 @@ submission-folder/
 │   └── declarations/              signed course forms (kept out of git)
 ├── editable/                      working files, not part of the zip
 │   ├── Restaurant-Rush-Report.docx    editable Word version of the report
-│   ├── diagrams/*.drawio          class diagram and the six sequence diagram parts for draw.io
+│   ├── diagrams/01-…07-*.drawio   the diagrams to open in draw.io, numbered (see diagrams/README.txt)
 │   └── video-script/              4-member script (Markdown and Word, one part per page)
 └── prepare_submission.py          refreshes the copies and builds the zip
 ```
@@ -44,9 +44,13 @@ The script is in `editable/video-script/`. It splits the seven §6.2 segments as
 
 - **Word:** edit `editable/Restaurant-Rush-Report.docx` directly. When Word asks whether to update fields, choose
   Yes so the contents page fills in. To get a PDF from your edited copy, use File › Save As › PDF.
-- **draw.io:** open the `.drawio` files in [app.diagrams.net](https://app.diagrams.net), the draw.io desktop app,
-  or the VS Code draw.io extension. Every class, lifeline and message is a normal shape you can move and edit.
-  Export with File › Export as › PNG or SVG.
+- **draw.io:** open the seven numbered files in `editable/diagrams/` (`01-class-diagram.drawio`, then the six
+  parts of the sequence diagram, `02-…` to `07-…`) in [app.diagrams.net](https://app.diagrams.net), the draw.io
+  desktop app, or the VS Code draw.io extension. These are the copies to edit; `diagrams/README.txt` lists what
+  each one shows. Every class, lifeline and message is a normal shape you can move and edit. Export with
+  File › Export as › PNG or SVG.
+- The prepare script does not overwrite a `.docx` or `.drawio` in `editable/` that you have edited; it says
+  which files it kept.
 - The PDF in `SCMA_Grp3/report/` is generated from `docs/report/report.html`. If you edit the Word file
   instead, export it to PDF and replace that file before zipping.
 

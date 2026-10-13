@@ -1,8 +1,8 @@
 """
 Writes editable draw.io versions of the report diagrams:
 
-  docs/diagrams/class-diagram.drawio               (from class_diagram.py, same layout as the SVG)
-  docs/diagrams/sequence-<n>-<name>.drawio         (one per part of the sequence diagram, from its .mmd)
+  docs/diagrams/01-class-diagram.drawio               (from class_diagram.py, same layout as the SVG)
+  docs/diagrams/0<n>-sequence-part-<k>-<name>.drawio  (one per part of the sequence diagram, from its .mmd)
 
 Open them in draw.io / diagrams.net (desktop app, the web app, or the VS Code extension).
 Every class, member, lifeline, message and fragment is a normal draw.io shape, so it can be moved
@@ -193,19 +193,19 @@ def class_drawio():
     doc.vertex("<br>".join(escape(line) for line in cd.READING_NOTES),
                f"text;html=1;align=left;verticalAlign=top;fontSize=10;fontColor=#6b7280;{SANS}",
                40, 1850, 540, 64)
-    doc.write(HERE / "class-diagram.drawio")
+    doc.write(HERE / "01-class-diagram.drawio")
 
 
 # ================================================================================== sequence diagrams
 
 # The sequence diagram is split into six parts; message numbers carry on from one part to the next.
 SEQUENCE_PARTS = [
-    ("sequence-1-arrival-seating", "Sequence diagram, part 1 (turn 7: arrival, Happy Hour, seating)"),
-    ("sequence-2-order-pricing", "Sequence diagram, part 2 (turn 7: order, pricing, cooking)"),
-    ("sequence-3-ready", "Sequence diagram, part 3 (turn 8: the order becomes READY)"),
-    ("sequence-4-served", "Sequence diagram, part 4 (turn 9: the order is SERVED)"),
-    ("sequence-5-eating-payment", "Sequence diagram, part 5 (turns 10-11: eating and payment)"),
-    ("sequence-6-result", "Sequence diagram, part 6 (after turn 18: the result check)"),
+    ("02-sequence-part-1-arrival-seating", "Sequence diagram, part 1 (turn 7: arrival, Happy Hour, seating)"),
+    ("03-sequence-part-2-order-pricing", "Sequence diagram, part 2 (turn 7: order, pricing, cooking)"),
+    ("04-sequence-part-3-ready", "Sequence diagram, part 3 (turn 8: the order becomes READY)"),
+    ("05-sequence-part-4-served", "Sequence diagram, part 4 (turn 9: the order is SERVED)"),
+    ("06-sequence-part-5-eating-payment", "Sequence diagram, part 5 (turns 10-11: eating and payment)"),
+    ("07-sequence-part-6-result", "Sequence diagram, part 6 (after turn 18: the result check)"),
 ]
 
 MSG = re.compile(r"^(\w+)\s*(-->>|->>)\s*([+-]?)(\w+)\s*:\s*(.*)$")

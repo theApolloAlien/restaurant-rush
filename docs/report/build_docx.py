@@ -31,13 +31,13 @@ OUT = HERE / "Restaurant-Rush-Report.docx"
 
 FONT, MONO = "Calibri", "Consolas"
 INK, ACCENT, MUTED = RGBColor(0x1F, 0x29, 0x37), RGBColor(0xB6, 0x52, 0x2B), RGBColor(0x6B, 0x72, 0x80)
-WIDE = {"CLASS_DIAGRAM": ("class-diagram.svg", "Class diagram", 24.0),
-        "SEQ_1": ("sequence-1-arrival-seating.svg", "Sequence diagram part 1", 24.0),
-        "SEQ_2": ("sequence-2-order-pricing.svg", "Sequence diagram part 2", 24.0),
-        "SEQ_3": ("sequence-3-ready.svg", "Sequence diagram part 3", 24.0),
-        "SEQ_4": ("sequence-4-served.svg", "Sequence diagram part 4", 24.0),
-        "SEQ_5": ("sequence-5-eating-payment.svg", "Sequence diagram part 5", 24.0),
-        "SEQ_6": ("sequence-6-result.svg", "Sequence diagram part 6", 12.0)}
+WIDE = {"CLASS_DIAGRAM": ("01-class-diagram.svg", "Class diagram", 24.0),
+        "SEQ_1": ("02-sequence-part-1-arrival-seating.svg", "Sequence diagram part 1", 24.0),
+        "SEQ_2": ("03-sequence-part-2-order-pricing.svg", "Sequence diagram part 2", 24.0),
+        "SEQ_3": ("04-sequence-part-3-ready.svg", "Sequence diagram part 3", 24.0),
+        "SEQ_4": ("05-sequence-part-4-served.svg", "Sequence diagram part 4", 24.0),
+        "SEQ_5": ("06-sequence-part-5-eating-payment.svg", "Sequence diagram part 5", 24.0),
+        "SEQ_6": ("07-sequence-part-6-result.svg", "Sequence diagram part 6", 12.0)}
 A3_W, A3_H = Cm(42.0), Cm(29.7)
 
 

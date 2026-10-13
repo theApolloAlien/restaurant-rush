@@ -33,8 +33,8 @@ sys.path.insert(0, str(HERE))
 from ansi2html import convert  # noqa: E402
 
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
-SEQUENCES = ["sequence-1-arrival-seating", "sequence-2-order-pricing", "sequence-3-ready", "sequence-4-served",
-             "sequence-5-eating-payment", "sequence-6-result"]
+SEQUENCES = ["02-sequence-part-1-arrival-seating", "03-sequence-part-2-order-pricing", "04-sequence-part-3-ready",
+             "05-sequence-part-4-served", "06-sequence-part-5-eating-payment", "07-sequence-part-6-result"]
 
 MERMAID_PAGE = """<!doctype html><meta charset=utf-8><body style="margin:0;background:#fff">
 <pre id=src style=display:none>{src}</pre><div id=out></div>
@@ -61,7 +61,7 @@ def run(cmd, cwd=None, stdin=None):
 def render_sequences():
     for name in SEQUENCES:
         page = BUILD / f"{name}.html"
-        diagram_id = "seq" + name.split("-")[1]
+        diagram_id = "seq" + name.split("-")[0]          # unique per diagram, e.g. seq02
         page.write_text(MERMAID_PAGE.format(src=html.escape((DIAGRAMS / f"{name}.mmd").read_text()),
                                             diagram_id=diagram_id))
         try:
@@ -217,7 +217,7 @@ def main():
         "TESTS_2": test_list(r["tests2"]),
         "TESTS_3": test_list(r["tests3"]),
         "GIT_LOG": git_log(),
-        "CLASS_DIAGRAM": inline_svg("class-diagram.svg"),
+        "CLASS_DIAGRAM": inline_svg("01-class-diagram.svg"),
         **{f"SEQ_{n}": inline_svg(f"{name}.svg") for n, name in enumerate(SEQUENCES, 1)},
     }
 

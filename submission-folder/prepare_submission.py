@@ -13,7 +13,9 @@ What it does
 
 Run python3 docs/report/build.py first if the report or diagrams changed.
 """
+import hashlib
 import io
+import json
 import re
 import shutil
 import subprocess
@@ -76,15 +78,42 @@ def refresh_pack():
     print(f"  refreshed {PACK.relative_to(ROOT)}/ (source code, README, PDF report)")
 
 
+def digest(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
 def refresh_editable():
-    copy(ROOT / "docs/report/Restaurant-Rush-Report.docx", EDIT / "Restaurant-Rush-Report.docx")
+    """Copies the generated .docx and .drawio files into editable/, but never over a file someone has edited.
+
+    editable/.generated.json remembers what this script last wrote, so a file that no longer matches it was
+    changed by hand and is kept.
+    """
+    manifest_path = EDIT / ".generated.json"
+    written = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
+    kept = []
+
+    def refresh(src, dst):
+        key = dst.relative_to(EDIT).as_posix()
+        if dst.exists() and digest(dst) != digest(src) and written.get(key) != digest(dst):
+            kept.append(key)
+            return
+        copy(src, dst)
+        written[key] = digest(dst)
+
+    refresh(ROOT / "docs/report/Restaurant-Rush-Report.docx", EDIT / "Restaurant-Rush-Report.docx")
     current = sorted((ROOT / "docs/diagrams").glob("*.drawio"))
+    names = {f.name for f in current}
     for old in (EDIT / "diagrams").glob("*.drawio"):
-        if old.name not in {f.name for f in current}:
-            old.unlink()                     # a diagram that was renamed or removed in docs/diagrams
+        key = old.relative_to(EDIT).as_posix()
+        if old.name not in names and written.get(key) == digest(old):
+            old.unlink()                     # a generated diagram that was renamed or removed in docs/diagrams
+            written.pop(key, None)
     for f in current:
-        copy(f, EDIT / "diagrams" / f.name)
+        refresh(f, EDIT / "diagrams" / f.name)
+    manifest_path.write_text(json.dumps(written, indent=2, sort_keys=True) + "\n")
     print(f"  refreshed {EDIT.relative_to(ROOT)}/ (report .docx, draw.io diagrams)")
+    for key in kept:
+        print(f"  ! kept editable/{key}: it was edited by hand, so the generated version was not copied over it")
 
 
 def video_script_docx():
